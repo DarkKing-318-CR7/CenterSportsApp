@@ -15,7 +15,7 @@ import java.util.List;
 public class DatabaseHelper extends SQLiteOpenHelper {
 
     private static final String DATABASE_NAME = "sports_center.db";
-    private static final int DATABASE_VERSION = 1;
+    private static final int DATABASE_VERSION = 2;
     public static final String TABLE_USERS = "Users";
 
     public DatabaseHelper(Context context) {
@@ -53,6 +53,14 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 + "password TEXT,"
                 + "role TEXT)";
         db.execSQL(CREATE_USERS_TABLE);
+
+        // Insert dữ liệu mẫu
+        db.execSQL("INSERT INTO Users (name, email, password, role) VALUES " +
+                "('Admin Root', 'admin@sport.com', 'admin123', 'admin')," +
+                "('Nguyễn Văn A', 'a@gmail.com', '123456', 'player')," +
+                "('Trần Thị B', 'b@gmail.com', 'abc123', 'coach')");
+
+
 
         String CREATE_COURTS_TABLE = "CREATE TABLE Courts (" +
                 "id INTEGER PRIMARY KEY AUTOINCREMENT, " +
