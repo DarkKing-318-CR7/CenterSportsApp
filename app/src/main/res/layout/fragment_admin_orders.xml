@@ -3,12 +3,11 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:padding="16dp">
+    android:padding="10dp">
 
     <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/recyclerShop"
+        android:id="@+id/recyclerAdminOrders"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:clipToPadding="false"
-        android:paddingBottom="16dp"/>
+        android:layout_height="match_parent" />
+
 </LinearLayout>

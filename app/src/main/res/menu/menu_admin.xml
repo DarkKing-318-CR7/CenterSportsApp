@@ -1,0 +1,18 @@
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <item
+        android:id="@+id/nav_admin_orders"
+        android:title="Phê duyệt đơn"
+        android:icon="@android:drawable/ic_menu_agenda" />
+
+    <item
+        android:id="@+id/nav_admin_dashboard"
+        android:title="Thống kê"
+        android:icon="@android:drawable/ic_menu_sort_by_size" />
+
+    <item
+        android:id="@+id/nav_account"
+        android:title="Tài khoản"
+        android:icon="@android:drawable/ic_menu_manage" />
+
+</menu>

@@ -19,33 +19,50 @@ import com.example.sportcenterapp.utils.SessionManager;
 
 public class AccountFragment extends Fragment {
 
-    TextView tvWelcome, tvEmail, tvRole;
-    Button btnLogout;
-    SessionManager session;
+    private TextView tvWelcome, tvEmail, tvRole;
+    private Button btnLogout;
+    private SessionManager session;
 
-    @Nullable
-    @Override
+    // Nếu bạn đang gọi newInstance(userId, role) thì vẫn giữ, còn không có thể bỏ method này.
+    public static AccountFragment newInstance(int userId, String role) {
+        AccountFragment f = new AccountFragment();
+        Bundle b = new Bundle();
+        b.putInt("userId", userId);
+        b.putString("userRole", role);
+        f.setArguments(b);
+        return f;
+    }
+
+    @Nullable @Override
     public View onCreateView(@NonNull LayoutInflater inflater,
                              @Nullable ViewGroup container,
                              @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_account, container, false);
 
         tvWelcome = view.findViewById(R.id.tvWelcome);
-        tvEmail = view.findViewById(R.id.tvEmail);
-        tvRole = view.findViewById(R.id.tvRole);
+        tvEmail   = view.findViewById(R.id.tvEmail);
+        tvRole    = view.findViewById(R.id.tvRole);
         btnLogout = view.findViewById(R.id.btnLogout);
-        session = new SessionManager(getContext());
+
+        session = new SessionManager(requireContext());  // requireContext() an toàn hơn
 
         User user = session.getUser();
-
-        tvWelcome.setText("Xin chào, " + user.getName());
-        tvEmail.setText("Email: " + user.getEmail());
-        tvRole.setText("Vai trò: " + user.getRole());
+        if (user != null) {
+            // Dùng string resources với placeholder thay vì nối chuỗi
+            tvWelcome.setText(getString(R.string.acc_hello, user.getName()));
+            tvEmail.setText(getString(R.string.acc_email, user.getEmail()));
+            tvRole.setText(getString(R.string.acc_role,  user.getRole()));
+        }
 
         btnLogout.setOnClickListener(v -> {
-            session.logout();
-            startActivity(new Intent(getActivity(), LoginActivity.class));
-            getActivity().finish();
+            // SessionManager của bạn có phương thức clear(), không phải logout()
+            session.clear();
+
+            // Quay về Login + clear backstack
+            Intent i = new Intent(requireContext(), LoginActivity.class);
+            i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+            startActivity(i);
+            requireActivity().finish(); // safe
         });
 
         return view;

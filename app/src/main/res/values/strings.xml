@@ -1,5 +1,8 @@
 <resources>
     <string name="app_name">SportCenterApp</string>
+    <string name="acc_hello">Xin chào, %1$s</string>
+    <string name="acc_email">Email: %1$s</string>
+    <string name="acc_role">Vai trò: %1$s</string>
     <string-array name="roles_array">
         <item>player</item>
         <item>coach</item>
