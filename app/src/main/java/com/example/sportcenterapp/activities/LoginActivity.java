@@ -4,6 +4,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -17,6 +18,7 @@ import com.example.sportcenterapp.utils.SessionManager;
 public class LoginActivity extends AppCompatActivity {
 
     EditText etEmail, etPassword;
+    Spinner spinnerLoginRole;
     Button btnLogin;
     TextView tvRegister;
     DatabaseHelper db;
@@ -29,6 +31,7 @@ public class LoginActivity extends AppCompatActivity {
 
         etEmail = findViewById(R.id.etEmail);
         etPassword = findViewById(R.id.etPassword);
+        spinnerLoginRole = findViewById(R.id.spinnerLoginRole);
         btnLogin = findViewById(R.id.btnLogin);
         tvRegister = findViewById(R.id.tvRegister);
 
@@ -38,15 +41,28 @@ public class LoginActivity extends AppCompatActivity {
         btnLogin.setOnClickListener(v -> {
             String email = etEmail.getText().toString();
             String pass = etPassword.getText().toString();
+            String selectedRole = spinnerLoginRole.getSelectedItem().toString().toLowerCase(); // user/shop/admin
 
             User user = db.loginUser(email, pass);
-            if (user != null) {
+            if (user != null && user.getRole().equals(selectedRole)) {
                 session.login(user);
                 Toast.makeText(this, "Đăng nhập thành công", Toast.LENGTH_SHORT).show();
-                startActivity(new Intent(this, MainActivity.class));
+
+                // Chuyển hướng theo vai trò
+                switch (selectedRole) {
+                    case "user":
+                        startActivity(new Intent(this, UserActivity.class));
+                        break;
+                    case "owner":
+                        startActivity(new Intent(this, OwnerActivity.class));
+                        break;
+                    case "admin":
+                        startActivity(new Intent(this, AdminActivity.class));
+                        break;
+                }
                 finish();
             } else {
-                Toast.makeText(this, "Sai tài khoản hoặc mật khẩu", Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, "Sai tài khoản, mật khẩu hoặc vai trò", Toast.LENGTH_SHORT).show();
             }
         });
 

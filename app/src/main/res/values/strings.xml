@@ -1,9 +1,14 @@
 <resources>
-    <string name="app_name">SportCenterApp</string>
-    <string-array name="roles_array">
-        <item>player</item>
-        <item>coach</item>
+    <string name="app_name">Center Sports App</string>
+
+    <string-array name="roles_login_array">
+        <item>user</item>
+        <item>shop</item>
         <item>admin</item>
     </string-array>
 
+    <string-array name="roles_array">
+        <item>user</item>
+        <item>shop</item>
+    </string-array>
 </resources>

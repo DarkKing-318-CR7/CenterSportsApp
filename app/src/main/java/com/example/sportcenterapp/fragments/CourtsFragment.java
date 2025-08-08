@@ -1,5 +1,6 @@
+// CourtsFragment.java (đã sửa để cập nhật trạng thái sân vào SQLite)
 package com.example.sportcenterapp.fragments;
-import android.app.AlertDialog;
+
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -21,42 +22,34 @@ import java.util.List;
 
 public class CourtsFragment extends Fragment {
 
-    RecyclerView recyclerView;
-    CourtAdapter adapter;
-    DatabaseHelper db;
+    private RecyclerView recyclerView;
+    private CourtAdapter adapter;
+    private List<Court> courtList;
+    private DatabaseHelper dbHelper;
 
     @Nullable
     @Override
-    public View onCreateView(@NonNull LayoutInflater inflater,
-                             @Nullable ViewGroup container,
-                             @Nullable Bundle savedInstanceState) {
+    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_courts, container, false);
 
-        recyclerView = view.findViewById(R.id.recyclerCourts);
-        db = new DatabaseHelper(getContext());
-
-        List<Court> courts = db.getAllCourts();
-        adapter = new CourtAdapter(getContext(), courts);
-
+        recyclerView = view.findViewById(R.id.recyclerViewCourts);
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
-        recyclerView.setAdapter(adapter);
 
-        // XỬ LÝ ĐẶT SÂN – Đặt TRƯỚC return
-        adapter.setOnBookClickListener(court -> {
-            String[] timeOptions = {"7:00 - 8:00", "8:00 - 9:00", "9:00 - 10:00"};
-            new AlertDialog.Builder(getContext())
-                    .setTitle("Chọn thời gian đặt cho " + court.getName())
-                    .setItems(timeOptions, (dialog, which) -> {
-                        String selectedTime = timeOptions[which];
-                        boolean success = db.bookCourt(1, court.getId(), selectedTime);
-                        if (success) {
-                            Toast.makeText(getContext(), "Đặt sân thành công!", Toast.LENGTH_SHORT).show();
-                        } else {
-                            Toast.makeText(getContext(), "Thất bại! Vui lòng thử lại", Toast.LENGTH_SHORT).show();
-                        }
-                    }).show();
+        dbHelper = new DatabaseHelper(getContext());
+        courtList = dbHelper.getAllCourts();
+
+        adapter = new CourtAdapter(getContext(), courtList, court -> {
+            if (court.getStatus().equals("available")) {
+                court.setStatus("booked");
+                dbHelper.updateCourtStatus(court.getId(), "booked");
+                adapter.notifyDataSetChanged();
+                Toast.makeText(getContext(), "Đặt sân thành công", Toast.LENGTH_SHORT).show();
+            } else {
+                Toast.makeText(getContext(), "Sân đã được đặt", Toast.LENGTH_SHORT).show();
+            }
         });
 
-        return view; // TRẢ VIEW SAU CÙNG
+        recyclerView.setAdapter(adapter);
+        return view;
     }
 }

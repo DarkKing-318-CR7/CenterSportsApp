@@ -1,38 +1,42 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:orientation="vertical"
-    android:padding="12dp"
-    android:background="@android:color/white"
+<androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:elevation="2dp">
+    android:layout_margin="8dp"
+    android:elevation="4dp"
+    android:padding="16dp">
 
-    <TextView
-        android:id="@+id/tvCourtName"
-        android:text="Tên sân"
-        android:textStyle="bold"
-        android:textSize="18sp"
+    <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"/>
-
-    <TextView
-        android:id="@+id/tvCourtSport"
-        android:text="Môn thể thao"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"/>
-
-    <TextView
-        android:id="@+id/tvCourtStatus"
-        android:text="Trạng thái"
-        android:textColor="@android:color/holo_green_dark"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"/>
-
-    <Button
-        android:id="@+id/btnBookCourt"
-        android:text="Đặt sân"
-        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"/>
+        android:orientation="vertical">
 
-</LinearLayout>
+        <TextView
+            android:id="@+id/tvCourtName"
+            android:text="Tên sân"
+            android:textStyle="bold"
+            android:textSize="18sp"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
+
+        <TextView
+            android:id="@+id/tvSport"
+            android:text="Môn thể thao"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
+
+        <TextView
+            android:id="@+id/tvStatus"
+            android:text="Trạng thái: available"
+            android:layout_width="match_parent"
+            android:textColor="@android:color/holo_green_dark"
+            android:layout_height="wrap_content" />
+
+        <Button
+            android:id="@+id/btnBook"
+            android:text="Đặt sân"
+            android:layout_marginTop="8dp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+    </LinearLayout>
+</androidx.cardview.widget.CardView>

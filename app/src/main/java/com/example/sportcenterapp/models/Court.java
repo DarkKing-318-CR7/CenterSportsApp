@@ -24,6 +24,9 @@ public class Court {
     public String getSport() { return sport; }
     public String getStatus() { return status; }
 
+    public void setStatus(String status) {
+        this.status = status;
+    }
 
 }
 
