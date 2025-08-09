@@ -41,6 +41,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
         cursor.close();
         return courts;
+
+
     }
 
 
@@ -137,4 +139,13 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         }
         return null;
     }
+
+
+    public void updateCourtStatus(int courtId, String newStatus) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        ContentValues values = new ContentValues();
+        values.put("status", newStatus);
+        db.update("Courts", values, "id = ?", new String[]{String.valueOf(courtId)});
+    }
+
 }

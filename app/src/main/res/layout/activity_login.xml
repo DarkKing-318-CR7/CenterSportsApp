@@ -16,6 +16,14 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content" />
 
+    <Spinner
+        android:id="@+id/spinnerLoginRole"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:entries="@array/roles_login_array"
+        android:layout_marginTop="8dp"/>
+
+
     <Button
         android:id="@+id/btnLogin"
         android:text="Đăng nhập"
