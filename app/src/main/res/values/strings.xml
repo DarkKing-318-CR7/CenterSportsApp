@@ -1,0 +1,8 @@
+<resources>
+    <string name="app_name">SportCenterApp</string>
+    <string name="navigation_drawer_open">Open navigation drawer</string>
+    <string name="navigation_drawer_close">Close navigation drawer</string>
+    <string name="nav_open">Mở menu</string>
+    <string name="nav_close">Đóng menu</string>
+
+</resources>

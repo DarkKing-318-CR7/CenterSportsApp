@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:id="@+id/tab_home"    android:title="Home"    android:icon="@drawable/ic_home"/>
+    <item android:id="@+id/tab_booking" android:title="Đặt sân" android:icon="@drawable/ic_booking"/>
+    <item android:id="@+id/tab_shop"    android:title="Shop"    android:icon="@drawable/ic_shop"/>
+    <item android:id="@+id/tab_coach"   android:title="HLV"     android:icon="@drawable/ic_coach"/>
+    <item android:id="@+id/tab_account" android:title="Account" android:icon="@drawable/ic_account"/>
+</menu>

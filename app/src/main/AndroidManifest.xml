@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="com.example.sportcenterapp">
+    <application
+        android:allowBackup="true"
+        android:label="CenterBooking"
+        android:icon="@mipmap/ic_launcher"
+        android:roundIcon="@mipmap/ic_launcher_round"
+        android:supportsRtl="true"
+        android:theme="@style/Theme.Material3.Light.NoActionBar">
+
+        <!-- Admin -->
+        <activity
+            android:name=".admin.AdminActivity"
+            android:exported="false" />
+
+        <!-- Player -->
+        <activity
+            android:name=".player.PlayerActivity"
+            android:exported="false" />
+
+        <!-- Login (LAUNCHER) -->
+        <activity
+            android:name=".LoginActivity"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+
+    </application>
+
+
+</manifest>

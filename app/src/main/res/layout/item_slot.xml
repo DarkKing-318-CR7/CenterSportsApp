@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<TextView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/tvSlot"
+    android:layout_width="match_parent"
+    android:layout_height="48dp"
+    android:gravity="center"
+    android:text="06:00 - 07:00"
+    android:background="#EDE7F6"
+    android:layout_margin="6dp"
+    android:textStyle="bold"/>

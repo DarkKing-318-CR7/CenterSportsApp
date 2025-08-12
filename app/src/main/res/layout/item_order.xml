@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="horizontal" android:padding="12dp" android:background="@drawable/bg_card"
+    android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginBottom="8dp">
+
+    <TextView android:id="@+id/tvOrderId" android:text="#1" android:textStyle="bold"
+        android:layout_width="wrap_content" android:layout_height="wrap_content"/>
+
+    <LinearLayout android:orientation="vertical" android:paddingStart="12dp"
+        android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1">
+        <TextView android:id="@+id/tvOrderTotal" android:text="120.000đ"
+            android:textStyle="bold" android:textSize="16sp"
+            android:layout_width="wrap_content" android:layout_height="wrap_content"/>
+        <TextView android:id="@+id/tvOrderTime" android:text="2025-08-12 09:10"
+            android:layout_width="wrap_content" android:layout_height="wrap_content"/>
+    </LinearLayout>
+
+    <TextView android:text="Chi tiết" android:layout_width="wrap_content" android:layout_height="wrap_content"/>
+</LinearLayout>
