@@ -3,13 +3,17 @@ package com.example.sportcenterapp.models;
 public class Court {
     public int id;
     public String name, sport, surface, image;
-    public boolean indoor;
-    public double pricePerHour, rating;
+    public int indoor;
+    public double price, rating;
 
-    public Court(int id, String name, String sport, String surface, boolean indoor,
-                 double pricePerHour, double rating, String image) {
+    public Court(int id, String name, String sport, String surface, int indoor,
+                 double price, double rating, String image) {
         this.id = id; this.name = name; this.sport = sport; this.surface = surface;
-        this.indoor = indoor; this.pricePerHour = pricePerHour; this.rating = rating; this.image = image;
+        this.indoor = indoor; this.price = price; this.rating = rating; this.image = image;
+    }
+
+    public Court() {
+
     }
 
     @Override public String toString() { return name; } // để Spinner hiển thị tên

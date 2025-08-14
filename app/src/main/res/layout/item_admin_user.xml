@@ -1,0 +1,54 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical" android:padding="8dp"
+    android:background="@drawable/bg_card"
+    android:layout_width="match_parent" android:layout_height="wrap_content">
+
+<TextView
+android:id="@+id/tvName"
+android:textStyle="bold" android:textSize="16sp"
+android:layout_width="wrap_content" android:layout_height="wrap_content"/>
+
+<TextView
+android:id="@+id/tvInfo"
+android:textColor="#666"
+android:layout_width="wrap_content" android:layout_height="wrap_content"/>
+
+<TextView
+android:id="@+id/tvRoleVip"
+android:textColor="#333"
+android:layout_width="wrap_content" android:layout_height="wrap_content"
+android:paddingBottom="6dp"/>
+
+<LinearLayout
+android:orientation="horizontal"
+android:layout_width="match_parent" android:layout_height="wrap_content">
+
+<ImageButton
+    android:id="@+id/btnEdit"
+    android:src="@android:drawable/ic_menu_edit"
+    android:contentDescription="Sửa"
+    android:background="?attr/selectableItemBackgroundBorderless"
+    android:layout_width="48dp" android:layout_height="48dp"/>
+
+<ImageButton
+    android:id="@+id/btnVip"
+    android:src="@android:drawable/btn_star_big_on"
+    android:contentDescription="VIP"
+    android:background="?attr/selectableItemBackgroundBorderless"
+    android:layout_width="48dp" android:layout_height="48dp"/>
+
+<ImageButton
+    android:id="@+id/btnRole"
+    android:src="@android:drawable/ic_menu_manage"
+    android:contentDescription="Đổi role"
+    android:background="?attr/selectableItemBackgroundBorderless"
+    android:layout_width="48dp" android:layout_height="48dp"/>
+
+<ImageButton
+    android:id="@+id/btnDelete"
+    android:src="@android:drawable/ic_menu_delete"
+    android:contentDescription="Xoá"
+    android:background="?attr/selectableItemBackgroundBorderless"
+    android:layout_width="48dp" android:layout_height="48dp"/>
+</LinearLayout>
+    </LinearLayout>

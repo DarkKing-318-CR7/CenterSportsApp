@@ -37,31 +37,31 @@ public class ShopFragment extends Fragment {
         RecyclerView rv = v.findViewById(R.id.rvProducts);
         rv.setLayoutManager(new GridLayoutManager(getContext(), 2));
 
-        DatabaseHelper db = new DatabaseHelper(getContext());
+        DatabaseHelper db = new DatabaseHelper(requireContext());
         List<Product> products = db.getProducts();
 
-        ProductAdapter ad = new ProductAdapter(products, p -> {
+// Adapter dành cho PLAYER (có nút Thêm)
+        ProductAdapter ad = new ProductAdapter(products, requireContext(), p -> {
             int userId = new SessionManager(requireContext()).getUserId();
-            DatabaseHelper dbh = new DatabaseHelper(getContext());
-            dbh.addToCart(userId, p.id, 1);
-            int count = dbh.getCartCount(userId);
 
-            Snackbar.make(v, "Đã thêm \"" + p.name + "\" (Giỏ: " + count + ")", Snackbar.LENGTH_LONG)
-                    .setAction("Xem giỏ", vw -> {
-                        requireActivity().getSupportFragmentManager().beginTransaction()
-                                .replace(R.id.player_nav_host, new CartFragment())
-                                .commit();
-                        MaterialToolbar tb = requireActivity().findViewById(R.id.topAppBar);
-                        if (tb != null) tb.setSubtitle("Giỏ hàng");
-                    })
-                    .show();
+            try (DatabaseHelper dbh = new DatabaseHelper(requireContext())) {
+                dbh.addToCart(userId, p.id, 1);
+                int count = dbh.getCartCount(userId);
 
-            // cập nhật badge text trên menu giỏ (nếu PlayerActivity có hàm này)
-            if (getActivity() instanceof com.example.sportcenterapp.player.PlayerActivity) {
-                ((com.example.sportcenterapp.player.PlayerActivity) getActivity()).refreshCartCount();
+                Snackbar.make(rv, "Đã thêm \"" + p.name + "\" (Giỏ: " + count + ")", Snackbar.LENGTH_LONG)
+                        .setAction("Xem giỏ", view1 -> {
+                            requireActivity().getSupportFragmentManager().beginTransaction()
+                                    .replace(R.id.player_nav_host, new CartFragment())
+                                    .commit();
+                        })
+                        .show();
+
+                MaterialToolbar tb = requireActivity().findViewById(R.id.topAppBar);
+                if (tb != null) tb.setSubtitle("Giỏ hàng: " + count);
             }
         });
         rv.setAdapter(ad);
+
 
         return v;
     }

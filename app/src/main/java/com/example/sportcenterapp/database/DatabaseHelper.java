@@ -68,13 +68,13 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 "sport TEXT," +
                 "surface TEXT," +
                 "indoor INTEGER," +              // 1: indoor, 0: outdoor
-                "price_per_hour REAL," +
+                "price REAL," +
                 "rating REAL," +
                 "image TEXT" +
                 ")");
 
         // Seed courts
-        db.execSQL("INSERT INTO Courts(name,sport,surface,indoor,price_per_hour,rating,image) VALUES " +
+        db.execSQL("INSERT INTO Courts(name,sport,surface,indoor,price,rating,image) VALUES " +
                 "('Sân 7 người','Bóng đá','Cỏ nhân tạo',0,250000,4.3,'court_soccer')," +
                 "('Sân BC 01','Bóng chuyền','PU',1,150000,4.6,'court_volleyball')," +
                 "('Cầu lông 01','Cầu lông','Gỗ',1,120000,4.8,'court_badminton')");
@@ -96,15 +96,16 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 "id INTEGER PRIMARY KEY AUTOINCREMENT," +
                 "name TEXT," +
                 "price REAL," +       // dùng REAL để nhất quán
-                "image TEXT" +
+                "image TEXT," +
+                "stock INTEGER"+
                 ")");
 
         // Seed products
-        db.execSQL("INSERT INTO Products(name,price,image) VALUES " +
-                "('Nước suối Aquafina', 8000, 'product_water')," +
-                "('Bóng đá Size 5', 150000, 'product_soccer_ball')," +
-                "('Áo thể thao Nike', 250000, 'product_tshirt')," +
-                "('Vợt cầu lông Yonex', 350000, 'product_badminton_racket')");
+        db.execSQL("INSERT INTO Products(name,price,image,stock) VALUES " +
+                "('Nước suối Aquafina', 8000, 'product_water',100)," +
+                "('Bóng đá Size 5', 150000, 'product_soccer_ball',12)," +
+                "('Áo thể thao Nike', 250000, 'product_tshirt',12)," +
+                "('Vợt cầu lông Yonex', 350000, 'product_badminton_racket',23)");
 
         // ==== CartItems ====
         db.execSQL("CREATE TABLE IF NOT EXISTS CartItems (" +
@@ -162,6 +163,14 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 "message TEXT NOT NULL," +
                 "timestamp TEXT NOT NULL" +              // yyyy-MM-dd HH:mm:ss
                 ")");
+
+        db.execSQL("CREATE TABLE IF NOT EXISTS Courts(" +
+                "id INTEGER PRIMARY KEY AUTOINCREMENT," +
+                "name TEXT, sport TEXT, surface TEXT, indoor INTEGER, price REAL, image TEXT)");
+        db.execSQL("CREATE TABLE IF NOT EXISTS Products(" +
+                "id INTEGER PRIMARY KEY AUTOINCREMENT," +
+                "name TEXT, price REAL, stock INTEGER, image TEXT)");
+
 
 
     }
@@ -269,7 +278,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         List<Court> list = new ArrayList<>();
         try (SQLiteDatabase db = getReadableDatabase();
              Cursor c = db.rawQuery(
-                     "SELECT id,name,sport,surface,indoor,price_per_hour,rating,image " +
+                     "SELECT id,name,sport,surface,indoor,price,rating,image " +
                              "FROM Courts ORDER BY name", null)) {
             while (c.moveToNext()) {
                 list.add(new Court(
@@ -277,7 +286,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                         c.getString(1),
                         c.getString(2),
                         c.getString(3),
-                        c.getInt(4) == 1,
+                        c.getInt(4),
                         c.getDouble(5),
                         c.getDouble(6),
                         c.getString(7)
@@ -356,13 +365,14 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     public List<Product> getProducts() {
         List<Product> list = new ArrayList<>();
         try (SQLiteDatabase db = getReadableDatabase();
-             Cursor c = db.rawQuery("SELECT id, name, price, image FROM Products", null)) {
+             Cursor c = db.rawQuery("SELECT id, name, price, image,stock FROM Products", null)) {
             while (c.moveToNext()) {
                 list.add(new Product(
                         c.getInt(0),
                         c.getString(1),
                         c.getDouble(2),
-                        c.getString(3)
+                        c.getString(3),
+                        c.getInt(4)
                 ));
             }
         }
@@ -610,6 +620,193 @@ public class DatabaseHelper extends SQLiteOpenHelper {
             }
         }
         return list;
+    }
+
+
+    //admin
+    // Lấy tất cả user (trừ khi bạn muốn ẩn tài khoản hệ thống)
+    public java.util.List<com.example.sportcenterapp.models.User> getAllUsers() {
+        var list = new java.util.ArrayList<com.example.sportcenterapp.models.User>();
+        String sql = "SELECT id, username, full_name, phone, email, vip, avatar, created_at, role FROM Users ORDER BY username";
+        try (android.database.Cursor c = getReadableDatabase().rawQuery(sql, null)) {
+            while (c.moveToNext()) {
+                var u = new com.example.sportcenterapp.models.User();
+                u.id = c.getInt(0); u.username = c.getString(1); u.fullName = c.getString(2);
+                u.phone = c.getString(3); u.email = c.getString(4); u.vip = c.getInt(5)==1;
+                u.avatar = c.getString(6); u.createdAt = c.getString(7); u.role = c.getString(8);
+                list.add(u);
+            }
+        }
+        return list;
+    }
+
+    // Tạo user mới
+    public boolean createUser(String username, String password, String role, String full, String phone, String email, boolean vip) {
+        android.content.ContentValues v = new android.content.ContentValues();
+        v.put("username", username);
+        v.put("password", password);   // demo plaintext
+        v.put("role", role);
+        v.put("full_name", full);
+        v.put("phone", phone);
+        v.put("email", email);
+        v.put("vip", vip ? 1 : 0);
+        v.put("created_at", new java.text.SimpleDateFormat("yyyy-MM-dd HH:mm:ss",
+                java.util.Locale.getDefault()).format(new java.util.Date()));
+        return getWritableDatabase().insert("Users", null, v) > 0;
+    }
+
+    // Xoá user
+    public boolean deleteUser(int id) {
+        return getWritableDatabase().delete("Users", "id=?", new String[]{String.valueOf(id)}) > 0;
+    }
+
+    // Set VIP
+    public boolean setVip(int id, boolean isVip) {
+        android.content.ContentValues v = new android.content.ContentValues();
+        v.put("vip", isVip ? 1 : 0);
+        return getWritableDatabase().update("Users", v, "id=?", new String[]{String.valueOf(id)}) > 0;
+    }
+
+    // Set Role
+    public boolean setRole(int id, String role) {
+        android.content.ContentValues v = new android.content.ContentValues();
+        v.put("role", role);
+        return getWritableDatabase().update("Users", v, "id=?", new String[]{String.valueOf(id)}) > 0;
+    }
+
+    //admin
+    // ===== COURTS (ADMIN) =====
+
+    // Create
+    public long createCourt(String name, String sport, String surface, boolean indoor, double price, @Nullable String image) {
+        ContentValues v = new ContentValues();
+        v.put("name", name);
+        v.put("sport", sport);
+        v.put("surface", surface);
+        v.put("indoor", indoor ? 1 : 0);   // map boolean -> 0/1
+        v.put("price", price);
+        v.put("image", image);
+        return getWritableDatabase().insert("Courts", null, v); // trả về rowId (=-1 nếu lỗi)
+    }
+
+    // Update
+    public boolean updateCourt(int id, String name, String sport, String surface, boolean indoor, double price, @Nullable String image) {
+        ContentValues v = new ContentValues();
+        v.put("name", name);
+        v.put("sport", sport);
+        v.put("surface", surface);
+        v.put("indoor", indoor ? 1 : 0);
+        v.put("price", price);
+        if (image != null) v.put("image", image);
+        return getWritableDatabase().update("Courts", v, "id=?", new String[]{String.valueOf(id)}) > 0;
+    }
+
+    // Delete
+    public boolean deleteCourt(int id) {
+        return getWritableDatabase().delete("Courts", "id=?", new String[]{String.valueOf(id)}) > 0;
+    }
+
+    // Get all (dùng cho Admin list)
+    public List<Court> getAllCourts() {
+        List<Court> list = new ArrayList<>();
+        String sql = "SELECT id, name, sport, surface, indoor, price, image FROM Courts ORDER BY name";
+        try (Cursor c = getReadableDatabase().rawQuery(sql, null)) {
+            while (c.moveToNext()) {
+                Court ct = new Court();
+                ct.id      = c.getInt(0);
+                ct.name    = c.getString(1);
+                ct.sport   = c.getString(2);
+                ct.surface = c.getString(3);
+                ct.indoor  = c.getInt(4);       // model đang dùng int 0/1
+                ct.price   = c.getDouble(5);
+                ct.image   = c.getString(6);
+                list.add(ct);
+            }
+        }
+        return list;
+    }
+
+    // Get by id (tiện cho màn sửa)
+    @Nullable
+    public Court getCourtById(int id) {
+        String sql = "SELECT id, name, sport, surface, indoor, price, image FROM Courts WHERE id=?";
+        try (Cursor c = getReadableDatabase().rawQuery(sql, new String[]{String.valueOf(id)})) {
+            if (c.moveToFirst()) {
+                Court ct = new Court();
+                ct.id = c.getInt(0);
+                ct.name = c.getString(1);
+                ct.sport = c.getString(2);
+                ct.surface = c.getString(3);
+                ct.indoor = c.getInt(4);
+                ct.price = c.getDouble(5);
+                ct.image = c.getString(6);
+                return ct;
+            }
+        }
+        return null;
+    }
+
+    // ===== PRODUCTS (ADMIN) =====
+
+    // Create
+    public long createProduct(String name, double price, int stock, @Nullable String image) {
+        ContentValues v = new ContentValues();
+        v.put("name", name);
+        v.put("price", price);
+        v.put("stock", stock);
+        v.put("image", image);
+        return getWritableDatabase().insert("Products", null, v);
+    }
+
+    // Update
+    public boolean updateProduct(int id, String name, double price, int stock, @Nullable String image) {
+        ContentValues v = new ContentValues();
+        v.put("name", name);
+        v.put("price", price);
+        v.put("stock", stock);
+        if (image != null) v.put("image", image);
+        return getWritableDatabase().update("Products", v, "id=?", new String[]{String.valueOf(id)}) > 0;
+    }
+
+    // Delete
+    public boolean deleteProduct(int id) {
+        return getWritableDatabase().delete("Products", "id=?", new String[]{String.valueOf(id)}) > 0;
+    }
+
+    // Get all
+    public List<Product> getAllProducts() {
+        List<Product> list = new ArrayList<>();
+        String sql = "SELECT id, name, price, stock, image FROM Products ORDER BY name";
+        try (Cursor c = getReadableDatabase().rawQuery(sql, null)) {
+            while (c.moveToNext()) {
+                Product p = new Product();
+                p.id    = c.getInt(0);
+                p.name  = c.getString(1);
+                p.price = c.getDouble(2);
+                p.stock = c.getInt(3);
+                p.image = c.getString(4);
+                list.add(p);
+            }
+        }
+        return list;
+    }
+
+    // Get by id
+    @Nullable
+    public Product getProductById(int id) {
+        String sql = "SELECT id, name, price, stock, image FROM Products WHERE id=?";
+        try (Cursor c = getReadableDatabase().rawQuery(sql, new String[]{String.valueOf(id)})) {
+            if (c.moveToFirst()) {
+                Product p = new Product();
+                p.id    = c.getInt(0);
+                p.name  = c.getString(1);
+                p.price = c.getDouble(2);
+                p.stock = c.getInt(3);
+                p.image = c.getString(4);
+                return p;
+            }
+        }
+        return null;
     }
 
 

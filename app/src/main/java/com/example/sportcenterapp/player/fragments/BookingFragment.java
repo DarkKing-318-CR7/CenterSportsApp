@@ -109,7 +109,7 @@ public class BookingFragment extends Fragment {
             }
 
             int userId = new SessionManager(requireContext()).getUserId();
-            double total = selectedCourt.pricePerHour; // 1 giờ
+            double total = selectedCourt.price; // 1 giờ
             long id = db2.createBooking(userId, selectedCourt.id, date, startSel, endSel, total);
             if (id > 0) {
                 Toast.makeText(getContext(), "Đặt sân thành công!", Toast.LENGTH_SHORT).show();
@@ -139,11 +139,11 @@ public class BookingFragment extends Fragment {
     private void bindCourtHeader(@NonNull Court c) {
         tvCourtName.setText(c.name);
 
-        String meta = c.sport + " • " + (c.indoor ? "Trong nhà" : "Ngoài trời");
+        String meta = c.sport + " • " + (c.indoor==1 ? "Trong nhà" : "Ngoài trời");
         if (c.surface != null && !c.surface.isEmpty()) meta += " • " + c.surface;
         tvCourtMeta.setText(meta);
 
-        tvCourtPrice.setText(String.format(Locale.getDefault(), "%,.0fđ/giờ", c.pricePerHour));
+        tvCourtPrice.setText(String.format(Locale.getDefault(), "%,.0fđ/giờ", c.price));
 
         int resId = getResources().getIdentifier(
                 (c.image == null || c.image.isEmpty()) ? "placeholder_court" : c.image,

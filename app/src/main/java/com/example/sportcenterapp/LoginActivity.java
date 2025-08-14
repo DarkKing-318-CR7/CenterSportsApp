@@ -4,6 +4,7 @@ import android.os.Bundle;
 import android.text.TextUtils;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -34,6 +35,24 @@ public class LoginActivity extends AppCompatActivity {
         session = new com.example.sportcenterapp.utils.SessionManager(this);
 
         btnLogin.setOnClickListener(v -> doLogin());
+
+        TextView tvDemoAdmin = findViewById(R.id.tvHint);
+        TextView tvDemoPlayer = findViewById(R.id.tvHint2);
+
+        EditText etUser = findViewById(R.id.etUser);
+        EditText etPass = findViewById(R.id.etPass);
+
+// Khi bấm vào demo admin
+        tvDemoAdmin.setOnClickListener(v -> {
+            etUser.setText("admin");
+            etPass.setText("admin123");
+        });
+
+// Khi bấm vào demo player
+        tvDemoPlayer.setOnClickListener(v -> {
+            etUser.setText("player");
+            etPass.setText("player123");
+        });
     }
 
     private void doLogin() {
@@ -50,6 +69,7 @@ public class LoginActivity extends AppCompatActivity {
             Toast.makeText(this, "Sai tài khoản hoặc mật khẩu", Toast.LENGTH_SHORT).show();
             return;
         }
+
 
         // Lưu session ĐÚNG API
         session.login(user.id, user.username, user.role, user.vip);
@@ -70,5 +90,6 @@ public class LoginActivity extends AppCompatActivity {
         i.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
         startActivity(i);
     }
+
 }
 

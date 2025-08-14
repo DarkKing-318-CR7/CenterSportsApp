@@ -1,5 +1,6 @@
 package com.example.sportcenterapp.adapters;
 
+import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -7,6 +8,7 @@ import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import androidx.annotation.Nullable;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -14,58 +16,82 @@ import com.example.sportcenterapp.R;
 import com.example.sportcenterapp.models.Product;
 
 import java.util.List;
-import java.util.Locale;
 
 public class ProductAdapter extends RecyclerView.Adapter<ProductAdapter.VH> {
 
-    public interface OnAdd { void add(Product p); }
+    public interface OnAdd { void onAdd(Product p); }
 
-    private final List<Product> data;
-    private final OnAdd cb;
+    private final List<Product> items;
+    private final Context context;
+    @Nullable private final OnAdd onAdd;
 
-    public ProductAdapter(List<Product> data, OnAdd cb) {
-        this.data = data;
-        this.cb = cb;
+    // Admin / nơi không cần nút "Thêm"
+    public ProductAdapter(List<Product> items, Context context) {
+        this(items, context, null);
     }
 
-    static class VH extends RecyclerView.ViewHolder {
-        ImageView img;
-        TextView tvName, tvPrice;
-        Button btnAdd;
-
-        VH(@NonNull View item) {
-            super(item);
-            // KHỚP ID trong item_product.xml (img, tvName, tvPrice, btnAdd)
-            img    = item.findViewById(R.id.img);
-            tvName = item.findViewById(R.id.tvName);
-            tvPrice= item.findViewById(R.id.tvPrice);
-            btnAdd = item.findViewById(R.id.btnAdd);
-        }
+    // Player / nơi cần nút "Thêm"
+    public ProductAdapter(List<Product> items, Context context, @Nullable OnAdd onAdd) {
+        this.items = items;
+        this.context = context;
+        this.onAdd = onAdd;
     }
 
     @NonNull @Override
     public VH onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        View v = LayoutInflater.from(parent.getContext())
-                .inflate(R.layout.item_product, parent, false);
+        View v = LayoutInflater.from(context).inflate(R.layout.item_product, parent, false);
         return new VH(v);
     }
 
     @Override
-    public void onBindViewHolder(@NonNull VH h, int position) {
-        Product p = data.get(position);
+    public void onBindViewHolder(@NonNull VH h, int pos) {
+        Product p = items.get(pos);
         h.tvName.setText(p.name);
-        h.tvPrice.setText(String.format(Locale.getDefault(), "%,.0fđ", p.price));
+        h.tvPrice.setText(String.format("%,.0fđ", p.price));
 
-        int resId = h.img.getResources().getIdentifier(
-                (p.image == null || p.image.isEmpty()) ? "placeholder_court" : p.image,
-                "drawable",
-                h.img.getContext().getPackageName()
-        );
-        h.img.setImageResource(resId == 0 ? R.drawable.placeholder_court : resId);
+        // Các view có thể không tồn tại trong layout
+        if (h.tvStock != null) h.tvStock.setText("Kho: " + p.stock);
+        if (h.ivImage != null) {
+            int resId = context.getResources().getIdentifier(
+                    (p.image == null || p.image.isEmpty()) ? "ic_product" : p.image,
+                    "drawable",
+                    context.getPackageName()
+            );
+            h.ivImage.setImageResource(resId == 0 ? R.drawable.ic_product : resId);
+        }
 
-        h.btnAdd.setOnClickListener(v -> { if (cb != null) cb.add(p); });
+        if (h.btnAdd != null) {
+            h.btnAdd.setOnClickListener(v -> {
+                if (onAdd != null) onAdd.onAdd(p);
+            });
+            h.btnAdd.setVisibility(onAdd == null ? View.GONE : View.VISIBLE);
+        }
     }
 
-    @Override
-    public int getItemCount() { return data.size(); }
+    @Override public int getItemCount() { return items.size(); }
+
+    static class VH extends RecyclerView.ViewHolder {
+        final TextView tvName, tvPrice;
+        @Nullable final TextView tvStock;   // optional
+        @Nullable final ImageView ivImage;  // optional
+        @Nullable final Button btnAdd;      // optional
+
+        VH(@NonNull View itemView) {
+            super(itemView);
+            tvName  = itemView.findViewById(R.id.tvName);
+            tvPrice = itemView.findViewById(R.id.tvPrice);
+
+            TextView tmpStock;
+            try { tmpStock = itemView.findViewById(R.id.tvStock); } catch (Exception e) { tmpStock = null; }
+            tvStock = tmpStock;
+
+            ImageView tmpIv;
+            try { tmpIv = itemView.findViewById(R.id.ivImage); } catch (Exception e) { tmpIv = null; }
+            ivImage = tmpIv;
+
+            Button tmpAdd;
+            try { tmpAdd = itemView.findViewById(R.id.btnAdd); } catch (Exception e) { tmpAdd = null; }
+            btnAdd = tmpAdd;
+        }
+    }
 }

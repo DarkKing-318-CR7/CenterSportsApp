@@ -1,0 +1,5 @@
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:id="@+id/menu_users" android:icon="@drawable/ic_person" android:title="Tài khoản"/>
+    <item android:id="@+id/menu_courts" android:icon="@drawable/ic_court" android:title="Sân"/>
+    <item android:id="@+id/menu_products" android:icon="@drawable/ic_shop" android:title="Sản phẩm"/>
+</menu>

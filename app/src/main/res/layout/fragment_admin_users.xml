@@ -1,0 +1,21 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical" android:padding="12dp"
+    android:layout_width="match_parent" android:layout_height="match_parent">
+
+    <Button
+        android:id="@+id/btnAddUser"
+        android:text="Thêm tài khoản"
+        android:layout_width="match_parent" android:layout_height="wrap_content"/>
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/rvUsers"
+        android:layout_width="match_parent" android:layout_height="0dp"
+        android:layout_weight="1" android:paddingTop="8dp"/>
+
+    <TextView
+        android:id="@+id/emptyUsers"
+        android:text="Chưa có người dùng"
+        android:gravity="center"
+        android:visibility="gone"
+        android:layout_width="match_parent" android:layout_height="wrap_content"/>
+</LinearLayout>

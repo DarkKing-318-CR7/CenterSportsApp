@@ -5,13 +5,16 @@ public class Product {
     public String name;
     public double price;
     public String image; // tên file ảnh trong drawable
-
-    public Product(int id, String name, double price, String image) {
+    public int stock;
+    public Product(int id, String name, double price, String image,int stock) {
         this.id = id;
         this.name = name;
         this.price = price;
         this.image = image;
+        this.stock=stock;
     }
+
+    public Product() {}
 
     @Override
     public String toString() {
