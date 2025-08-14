@@ -13,7 +13,9 @@ import com.example.sportcenterapp.R;
 import com.example.sportcenterapp.database.DatabaseHelper;
 import com.example.sportcenterapp.player.fragments.AccountFragment;
 import com.example.sportcenterapp.player.fragments.BookingFragment;
+import com.example.sportcenterapp.player.fragments.BookingHistoryFragment;
 import com.example.sportcenterapp.player.fragments.CartFragment;
+import com.example.sportcenterapp.player.fragments.ChatSupportFragment;
 import com.example.sportcenterapp.player.fragments.CoachFragment;
 import com.example.sportcenterapp.player.fragments.HomeFragment;
 import com.example.sportcenterapp.player.fragments.OrdersFragment;
@@ -54,11 +56,11 @@ public class PlayerActivity extends AppCompatActivity {
             navView.setNavigationItemSelectedListener(item -> {
                 int id = item.getItemId();
                 if (id == R.id.nav_booking_history) {
-                    replace(new BookingFragment(), "Lịch sử đặt sân"); // TODO: thay bằng BookingHistoryFragment khi có
+                    replace(new BookingHistoryFragment(), "Lịch sử đặt sân"); // TODO: thay bằng BookingHistoryFragment khi có
                 } else if (id == R.id.nav_order_history) {
                     replace(new OrdersFragment(), "Lịch sử mua hàng");  // TODO: thay bằng OrdersFragment khi có
                 } else if (id == R.id.nav_support_chat) {
-                    replace(new CoachFragment(), "Chat hỗ trợ");       // TODO: thay bằng ChatSupportFragment khi có
+                    replace(new ChatSupportFragment(), "Chat hỗ trợ");       // TODO: thay bằng ChatSupportFragment khi có
                 }
                 drawer.closeDrawers();
                 return true;

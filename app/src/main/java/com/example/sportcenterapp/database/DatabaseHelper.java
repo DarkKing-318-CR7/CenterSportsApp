@@ -8,6 +8,11 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.util.Log;
 
+import androidx.annotation.Nullable;
+
+import com.example.sportcenterapp.models.Booking;
+import com.example.sportcenterapp.models.ChatMessage;
+import com.example.sportcenterapp.models.Coach;
 import com.example.sportcenterapp.models.Court;
 import com.example.sportcenterapp.models.Order;
 import com.example.sportcenterapp.models.OrderItem;
@@ -36,18 +41,25 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         db.execSQL("CREATE TABLE IF NOT EXISTS Users (" +
                 "id INTEGER PRIMARY KEY AUTOINCREMENT," +
                 "username TEXT UNIQUE," +
-                "password_hash TEXT," +
-                "role TEXT," +
+                "password TEXT," +                         // <— mật khẩu vẫn có
                 "full_name TEXT," +
                 "phone TEXT," +
-                "vip_until TEXT," +
-                "created_at TEXT" +
+                "email TEXT," +
+                "vip INTEGER DEFAULT 0," +
+                "avatar TEXT," +
+                "created_at TEXT DEFAULT (datetime('now','localtime'))," +
+                "role TEXT DEFAULT 'player'" +
                 ")");
 
+
+
         // Seed demo users
-        db.execSQL("INSERT OR IGNORE INTO Users(username,password_hash,role,full_name,phone,created_at) VALUES " +
-                "('admin','admin123','ADMIN','Quản trị','0909000111',date('now'))," +
-                "('player','player123','PLAYER','Người chơi','0909000222',date('now'))");
+        db.execSQL(
+                "INSERT OR IGNORE INTO Users(username,password,role,full_name,phone,created_at) VALUES " +
+                        "('admin','admin123','admin','Quản trị','0909000111',date('now'))," +
+                        "('player','player123','player','Người chơi','0909000222',date('now'))"
+        );
+
 
         // ==== Courts ====
         db.execSQL("CREATE TABLE IF NOT EXISTS Courts (" +
@@ -120,10 +132,50 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 ")");
 
         // ⚠️ Không tạo thêm Orders/OrderItems chữ HOA để tránh nhầm lẫn schema
+
+        // DatabaseHelper.onCreate(...)
+        db.execSQL("CREATE TABLE IF NOT EXISTS Coaches (" +
+                "id INTEGER PRIMARY KEY AUTOINCREMENT," +
+                "name TEXT NOT NULL," +
+                "sport TEXT," +                 // bộ môn: Tennis/Badminton/Football...
+                "level TEXT," +                 // Beginner/Intermediate/Pro
+                "rate_per_hour REAL," +         // có thể null nếu bạn không dùng
+                "avatar TEXT," +                // tên file drawable hoặc url
+                "bio TEXT," +
+                "phone TEXT," +                 // SĐT
+                "email TEXT," +                 // Email
+                "zalo TEXT)");                  // ID/phone Zalo (tùy chọn)
+
+        // chỉ insert nếu rỗng
+        Cursor c = db.rawQuery("SELECT COUNT(*) FROM Coaches", null);
+        if (c.moveToFirst() && c.getInt(0) == 0) {
+            db.execSQL("INSERT INTO Coaches(name,sport,level,rate_per_hour,avatar,bio,phone,email,zalo) VALUES" +
+                    "('Nguyễn Minh','Tennis','Pro',350000,'coach_tennis_1','10 năm kinh nghiệm','0901002003','minh.tennis@example.com','0901002003')," +
+                    "('Trần Hòa','Badminton','Intermediate',250000,'coach_badminton_1','HLV cộng đồng','0905006007','hoa.badminton@example.com','0905006007')," +
+                    "('Zinédine Zidane','Football','Pro',5000000,'coach_football_1','Chuyên kỹ thuật tiền đạo','0912345678','vy.football@example.com','0912345678')");
+        }
+        c.close();
+
+        db.execSQL("CREATE TABLE IF NOT EXISTS ChatMessages (" +
+                "id INTEGER PRIMARY KEY AUTOINCREMENT," +
+                "sender_role TEXT NOT NULL," +           // 'player' hoặc 'admin'
+                "message TEXT NOT NULL," +
+                "timestamp TEXT NOT NULL" +              // yyyy-MM-dd HH:mm:ss
+                ")");
+
+
     }
 
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldV, int newV) {
+        try { db.execSQL("ALTER TABLE Users ADD COLUMN created_at TEXT"); } catch (Exception ignored) {}
+        try { db.execSQL("UPDATE Users SET created_at = datetime('now','localtime') " +
+                "WHERE created_at IS NULL OR created_at=''"); } catch (Exception ignored) {}
+
+        // thêm role nếu thiếu
+        try { db.execSQL("ALTER TABLE Users ADD COLUMN role TEXT"); } catch (Exception ignored) {}
+        try { db.execSQL("UPDATE Users SET role='player' WHERE role IS NULL OR role=''"); } catch (Exception ignored) {}
+
         // Đảm bảo bảng mới tồn tại (không drop dữ liệu cũ trừ khi bạn muốn)
         if (oldV < 4) {
             db.execSQL("CREATE TABLE IF NOT EXISTS orders (" +
@@ -140,28 +192,77 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                     "price REAL NOT NULL," +
                     "quantity INTEGER NOT NULL" +
                     ")");
+            db.execSQL("ALTER TABLE Bookings ADD COLUMN created_at TEXT DEFAULT (datetime('now','localtime'))");
         }
     }
 
     // ===== Users API =====
-    public User login(String username, String password) {
+    // DatabaseHelper.java
+    public @Nullable com.example.sportcenterapp.models.User login(String username, String password) {
+        String sql = "SELECT id, username, full_name, phone, email, vip, avatar, role, created_at " +
+                "FROM Users WHERE username=? AND password=? LIMIT 1";
+
         try (SQLiteDatabase db = getReadableDatabase();
-             Cursor c = db.rawQuery(
-                     "SELECT id, role, full_name, phone, vip_until " +
-                             "FROM Users WHERE username=? AND password_hash=?",
-                     new String[]{username, password})) {
+             Cursor c = db.rawQuery(sql, new String[]{username, password})) {
             if (c.moveToFirst()) {
-                return new User(
-                        c.getInt(0), username, null,
-                        c.getString(1),  // role
-                        c.getString(2),  // full_name
-                        c.getString(3),  // phone
-                        c.getString(4)   // vip_until
-                );
+                com.example.sportcenterapp.models.User u = new com.example.sportcenterapp.models.User();
+                u.id        = c.getInt(0);
+                u.username  = c.getString(1);
+                u.fullName  = c.getString(2);
+                u.phone     = c.getString(3);
+                u.email     = c.getString(4);
+                u.vip       = (c.getInt(5) == 1);
+                u.avatar    = c.getString(6);
+                u.role      = c.getString(7);
+                u.createdAt = c.getString(8);
+                return u;
             }
         }
         return null;
     }
+
+
+    public User getUserById(int userId) {
+        User u = null;
+        String sql = "SELECT id, username, full_name, phone, email, vip, avatar, created_at, role " +
+                "FROM Users WHERE id=?";
+        try (Cursor c = getReadableDatabase().rawQuery(sql, new String[]{String.valueOf(userId)})) {
+            if (c.moveToFirst()) {
+                u = new User();
+                u.id = c.getInt(0);
+                u.username = c.getString(1);
+                u.fullName = c.getString(2);
+                u.phone = c.getString(3);
+                u.email = c.getString(4);
+                u.vip = c.getInt(5) == 1;
+                u.avatar = c.getString(6);
+                u.createdAt = c.getString(7);
+                u.role = c.getString(8);
+            }
+        }
+        return u;
+    }
+
+    public boolean updateUserProfile(int userId, String fullName, String phone, String email, @Nullable String avatar) {
+        ContentValues v = new ContentValues();
+        v.put("full_name", fullName);
+        v.put("phone", phone);
+        v.put("email", email);
+        if (avatar != null) v.put("avatar", avatar);
+        return getWritableDatabase().update("Users", v, "id=?", new String[]{String.valueOf(userId)}) > 0;
+    }
+
+    public boolean changePassword(int userId, String oldPass, String newPass) {
+        try (Cursor c = getReadableDatabase().rawQuery(
+                "SELECT password FROM Users WHERE id=?", new String[]{String.valueOf(userId)})) {
+            if (!c.moveToFirst() || !c.getString(0).equals(oldPass)) return false;
+        }
+        ContentValues v = new ContentValues();
+        v.put("password", newPass);
+        return getWritableDatabase().update("Users", v, "id=?", new String[]{String.valueOf(userId)}) > 0;
+    }
+
+
 
     // ===== Courts API =====
     public List<Court> getCourts() {
@@ -198,6 +299,15 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         return false;
     }
 
+    // Lấy giá theo sân
+    public double getCourtRate(int courtId) {
+        try (Cursor c = getReadableDatabase()
+                .rawQuery("SELECT price_per_hour FROM Courts WHERE id=?",
+                        new String[]{String.valueOf(courtId)})) {
+            return (c.moveToFirst() ? c.getDouble(0) : 0);
+        }
+    }
+
     public long createBooking(int userId, int courtId, String date, String start, String end, double total) {
         ContentValues v = new ContentValues();
         v.put("user_id", userId);
@@ -211,6 +321,36 @@ public class DatabaseHelper extends SQLiteOpenHelper {
             return db.insert("Bookings", null, v);
         }
     }
+
+    // models/Booking.java gợi ý: id, courtName, date, startTime, endTime, status, totalPrice, createdAt, image
+    public List<com.example.sportcenterapp.models.Booking> getBookingsByUser(int userId) {
+        String sql =
+                "SELECT b.id, b.date, b.start_time, b.end_time, b.status, b.total_price, " +
+                        "       c.name, c.image " +
+                        "FROM Bookings b JOIN Courts c ON b.court_id = c.id " +
+                        "WHERE b.user_id=? " +
+                        "ORDER BY b.date DESC, b.start_time DESC, b.id DESC";
+
+        List<com.example.sportcenterapp.models.Booking> list = new java.util.ArrayList<>();
+        try (android.database.Cursor cur = getReadableDatabase().rawQuery(sql, new String[]{String.valueOf(userId)})) {
+            while (cur.moveToNext()) {
+                com.example.sportcenterapp.models.Booking m = new com.example.sportcenterapp.models.Booking();
+                m.id = cur.getInt(0);
+                m.date = cur.getString(1);
+                m.startTime = cur.getString(2);
+                m.endTime = cur.getString(3);
+                m.status = cur.getString(4);
+                m.totalPrice = cur.getDouble(5);
+                m.courtName = cur.getString(6);
+                m.courtImage = cur.getString(7);
+                // m.createdAt = null; // nếu model có field này thì để trống
+                list.add(m);
+            }
+        }
+        return list;
+    }
+
+
 
     // ===== Shop / Cart API =====
     public List<Product> getProducts() {
@@ -408,4 +548,69 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         }
         return out;
     }
+
+    public List<String> getCoachSports() {
+        List<String> list = new ArrayList<>();
+        SQLiteDatabase db = getReadableDatabase();
+        try (Cursor cur = db.rawQuery("SELECT DISTINCT sport FROM Coaches WHERE sport IS NOT NULL AND sport<>'' ORDER BY sport", null)) {
+            while (cur.moveToNext()) list.add(cur.getString(0));
+        }
+        return list;
+    }
+
+    public List<Coach> getCoachesBySport(@Nullable String sport) {
+        List<Coach> list = new ArrayList<>();
+        SQLiteDatabase db = getReadableDatabase();
+        Cursor cur;
+        if (sport == null || sport.equals("Tất cả")) {
+            cur = db.rawQuery("SELECT id,name,sport,level,rate_per_hour,avatar,bio,phone,email,zalo FROM Coaches ORDER BY name", null);
+        } else {
+            cur = db.rawQuery("SELECT id,name,sport,level,rate_per_hour,avatar,bio,phone,email,zalo FROM Coaches WHERE sport=? ORDER BY name", new String[]{sport});
+        }
+        try (cur) {
+            while (cur.moveToNext()) {
+                Coach m = new Coach();
+                m.id = cur.getInt(0);
+                m.name = cur.getString(1);
+                m.sport = cur.getString(2);
+                m.level = cur.getString(3);
+                m.ratePerHour = cur.getDouble(4);
+                m.avatar = cur.getString(5);
+                m.bio = cur.getString(6);
+                m.phone = cur.getString(7);
+                m.email = cur.getString(8);
+                m.zalo = cur.getString(9);
+                list.add(m);
+            }
+        }
+        return list;
+    }
+
+    //chatbox
+    public void addChatMessage(String senderRole, String message) {
+        ContentValues v = new ContentValues();
+        v.put("sender_role", senderRole);
+        v.put("message", message);
+        v.put("timestamp", new java.text.SimpleDateFormat(
+                "yyyy-MM-dd HH:mm:ss", java.util.Locale.getDefault()).format(new java.util.Date()));
+        getWritableDatabase().insert("ChatMessages", null, v);
+    }
+
+    public List<ChatMessage> getAllChatMessages() {
+        List<ChatMessage> list = new ArrayList<>();
+        String sql = "SELECT id, sender_role, message, timestamp FROM ChatMessages ORDER BY id ASC";
+        try (Cursor c = getReadableDatabase().rawQuery(sql, null)) {
+            while (c.moveToNext()) {
+                ChatMessage m = new ChatMessage();
+                m.id = c.getInt(0);
+                m.senderRole = c.getString(1);
+                m.message = c.getString(2);
+                m.timestamp = c.getString(3);
+                list.add(m);
+            }
+        }
+        return list;
+    }
+
+
 }

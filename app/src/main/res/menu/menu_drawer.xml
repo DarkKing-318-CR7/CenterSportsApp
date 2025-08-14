@@ -8,7 +8,7 @@
         <item
             android:id="@+id/nav_order_history"
             android:icon="@drawable/ic_orders"
-            android:title="Lịch sử mua hàng"/>
+            android:title="Lịch sử đơn hàng"/>
         <item
             android:id="@+id/nav_support_chat"
             android:icon="@drawable/ic_chat"

@@ -4,5 +4,10 @@
     <string name="navigation_drawer_close">Close navigation drawer</string>
     <string name="nav_open">Mở menu</string>
     <string name="nav_close">Đóng menu</string>
+    <string name="desc_call">Gọi</string>
+    <string name="desc_sms">SMS</string>
+    <string name="desc_email">Email</string>
+    <string name="desc_court_image">Hình ảnh sân</string>
+
 
 </resources>
