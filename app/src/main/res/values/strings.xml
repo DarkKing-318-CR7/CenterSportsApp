@@ -8,6 +8,9 @@
     <string name="desc_sms">SMS</string>
     <string name="desc_email">Email</string>
     <string name="desc_court_image">Hình ảnh sân</string>
+    <string name="banner_image">Banner</string>
+    <string name="promotion_image">Promotion</string>
+    <string name="court_image">Court</string>
 
 
 </resources>

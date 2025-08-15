@@ -10,7 +10,7 @@ import android.util.Log;
 
 import androidx.annotation.Nullable;
 
-import com.example.sportcenterapp.models.Booking;
+import com.example.sportcenterapp.R;
 import com.example.sportcenterapp.models.ChatMessage;
 import com.example.sportcenterapp.models.Coach;
 import com.example.sportcenterapp.models.Court;
@@ -712,7 +712,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         String sql = "SELECT id, name, sport, surface, indoor, price, image FROM Courts ORDER BY name";
         try (Cursor c = getReadableDatabase().rawQuery(sql, null)) {
             while (c.moveToNext()) {
-                Court ct = new Court();
+                Court ct = new Court("Sân 7 người", 250000,"court_soccer");
                 ct.id      = c.getInt(0);
                 ct.name    = c.getString(1);
                 ct.sport   = c.getString(2);
@@ -732,7 +732,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         String sql = "SELECT id, name, sport, surface, indoor, price, image FROM Courts WHERE id=?";
         try (Cursor c = getReadableDatabase().rawQuery(sql, new String[]{String.valueOf(id)})) {
             if (c.moveToFirst()) {
-                Court ct = new Court();
+                Court ct = new Court("Sân 7 người", 250000, "court_soccer");
                 ct.id = c.getInt(0);
                 ct.name = c.getString(1);
                 ct.sport = c.getString(2);

@@ -47,4 +47,8 @@ public class SessionManager {
 
     // Xoá toàn bộ session (đăng xuất)
     public void clear() { editor.clear().apply(); }
+    public void logout() {
+        // Nếu bạn muốn giữ 1 vài key (vd: ngôn ngữ) thì xoá chọn lọc
+        prefs.edit().clear().apply();
+    }
 }

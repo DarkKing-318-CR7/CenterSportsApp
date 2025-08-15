@@ -12,8 +12,23 @@ public class Court {
         this.indoor = indoor; this.price = price; this.rating = rating; this.image = image;
     }
 
-    public Court() {
+    public Court(String name, double price, String image) {
+        this.name = name;
+        this.price = price;
+        this.image = image;
+    }
 
+
+    public String getName() {
+        return name;
+    }
+
+    public double getPrice() {
+        return price;
+    }
+
+    public String getImage() {
+        return image;
     }
 
     @Override public String toString() { return name; } // để Spinner hiển thị tên
