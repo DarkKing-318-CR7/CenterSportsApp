@@ -20,6 +20,7 @@ import com.example.sportcenterapp.admin.fragments.BookingsFragment; // tạo khu
 import com.example.sportcenterapp.admin.fragments.InventoryFragment; // Tab Sản phẩm | Sân
 import com.example.sportcenterapp.player.fragments.ChatSupportFragment;
 import com.example.sportcenterapp.utils.SessionManager;
+import com.google.android.material.appbar.MaterialToolbar;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 
@@ -33,6 +34,29 @@ public class AdminActivity extends AppCompatActivity {
 
             // 1) PHẢI setContentView đúng layout chứa bottomAdmin
             setContentView(R.layout.activity_admin);
+            MaterialToolbar toolbar = findViewById(R.id.toolbarAdmin);
+
+// Bắt sự kiện click menu TOP tại đây
+            toolbar.setOnMenuItemClickListener(item -> {
+                int id = item.getItemId();
+
+                if (id == R.id.action_search) {
+                    // TODO: mở search
+                    Toast.makeText(this, "Tìm kiếm (demo)", Toast.LENGTH_SHORT).show();
+                    return true;
+
+                } else if (id == R.id.action_chat) {
+                    // mở chat
+                    switchTo(new ChatSupportFragment());
+                    return true;
+
+                } else if (id == R.id.action_logout) {
+                    confirmLogout(); // gọi dialog -> doLogout()
+                    return true;
+                }
+                return false;
+            });
+
 
             // 2) Tìm đúng id
             bottomAdmin = findViewById(R.id.bottomAdmin);
@@ -80,32 +104,32 @@ public class AdminActivity extends AppCompatActivity {
         }
 
     // AppBar actions (search + chat)
-    @Override
-    public boolean onCreateOptionsMenu(android.view.Menu menu) {
-        getMenuInflater().inflate(R.menu.menu_admin_top, menu);
-        return true;
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(@NonNull android.view.MenuItem item) {
-        int id = item.getItemId();
-
-        if (id == R.id.action_search) {
-            // TODO: mở SearchActivity hoặc SearchDialogFragment
-            Toast.makeText(this, "Tìm kiếm (demo)", Toast.LENGTH_SHORT).show();
-            return true;
-
-        } else if (id == R.id.action_chat) {
-            // Dùng lại ChatSupportFragment nếu bạn đã có
-            switchTo(new ChatSupportFragment());
-            return true;
-
-        } else if (id == R.id.action_logout) {
-            confirmLogout();
-            return true;
-        }
-        return super.onOptionsItemSelected(item);
-    }
+//    @Override
+//    public boolean onCreateOptionsMenu(android.view.Menu menu) {
+//        getMenuInflater().inflate(R.menu.menu_admin_top, menu);
+//        return true;
+//    }
+//
+//    @Override
+//    public boolean onOptionsItemSelected(@NonNull android.view.MenuItem item) {
+//        int id = item.getItemId();
+//
+//        if (id == R.id.action_search) {
+//            // TODO: mở SearchActivity hoặc SearchDialogFragment
+//            Toast.makeText(this, "Tìm kiếm (demo)", Toast.LENGTH_SHORT).show();
+//            return true;
+//
+//        } else if (id == R.id.action_chat) {
+//            // Dùng lại ChatSupportFragment nếu bạn đã có
+//            switchTo(new ChatSupportFragment());
+//            return true;
+//
+//        } else if (id == R.id.action_logout) {
+//            confirmLogout();
+//            return true;
+//        }
+//        return super.onOptionsItemSelected(item);
+//    }
 
     private void confirmLogout() {
         new MaterialAlertDialogBuilder(this)

@@ -112,13 +112,16 @@ public class BookingFragment extends Fragment {
             double total = selectedCourt.price; // 1 giờ
             long id = db2.createBooking(userId, selectedCourt.id, date, startSel, endSel, total);
             if (id > 0) {
-                Toast.makeText(getContext(), "Đặt sân thành công!", Toast.LENGTH_SHORT).show();
+                Toast.makeText(getContext(),
+                        "Đã gửi yêu cầu đặt sân. Vui lòng chờ quản trị duyệt.",
+                        Toast.LENGTH_LONG).show();
                 startSel = endSel = null;
                 btnBook.setEnabled(false);
-                loadSlots(); // refresh
+                loadSlots();
             } else {
                 Toast.makeText(getContext(), "Lỗi đặt sân", Toast.LENGTH_SHORT).show();
             }
+
         });
 
         // Mặc định chọn sân đầu

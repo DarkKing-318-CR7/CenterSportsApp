@@ -324,12 +324,43 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         v.put("date", date);
         v.put("start_time", start);
         v.put("end_time", end);
-        v.put("status", "CONFIRMED");
+        v.put("status", "PENDING");
         v.put("total_price", total);
         try (SQLiteDatabase db = getWritableDatabase()) {
             return db.insert("Bookings", null, v);
         }
     }
+    public int updateBookingStatus(long bookingId, String newStatus) {
+        ContentValues v = new ContentValues();
+        v.put("status", newStatus); // "PENDING" | "CONFIRMED" | "CANCELLED" | "COMPLETED"
+        return getWritableDatabase().update("Bookings", v, "id=?",
+                new String[]{String.valueOf(bookingId)});
+    }
+
+    public List<com.example.sportcenterapp.models.Booking> getAllBookings() {
+        String sql = "SELECT b.id, b.date, b.start_time, b.end_time, b.status, b.total_price," +
+                "       c.name, c.image " +
+                "FROM Bookings b JOIN Courts c ON b.court_id=c.id " +
+                "ORDER BY b.date DESC, b.start_time DESC, b.id DESC";
+        List<com.example.sportcenterapp.models.Booking> list = new java.util.ArrayList<>();
+        try (Cursor cur = getReadableDatabase().rawQuery(sql, null)) {
+            while (cur.moveToNext()) {
+                com.example.sportcenterapp.models.Booking m = new com.example.sportcenterapp.models.Booking();
+                m.id = cur.getInt(0);
+                m.date = cur.getString(1);
+                m.startTime = cur.getString(2);
+                m.endTime = cur.getString(3);
+                m.status = cur.getString(4);
+                m.totalPrice = cur.getDouble(5);
+                m.courtName = cur.getString(6);
+                m.courtImage = cur.getString(7);
+                list.add(m);
+            }
+        }
+        return list;
+    }
+
+
 
     // models/Booking.java gợi ý: id, courtName, date, startTime, endTime, status, totalPrice, createdAt, image
     public List<com.example.sportcenterapp.models.Booking> getBookingsByUser(int userId) {

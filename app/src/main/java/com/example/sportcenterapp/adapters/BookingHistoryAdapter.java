@@ -50,11 +50,19 @@ public class BookingHistoryAdapter extends RecyclerView.Adapter<BookingHistoryAd
         h.tvPrice.setText(String.format(Locale.getDefault(), "%,.0fđ", m.totalPrice));
 
         // status màu nhẹ
-        h.tvStatus.setText(m.status == null ? "CONFIRMED" : m.status);
-        int color = Color.parseColor("#00897B"); // confirmed
-        if ("CANCELLED".equalsIgnoreCase(m.status)) color = Color.parseColor("#D32F2F");
-        if ("COMPLETED".equalsIgnoreCase(m.status)) color = Color.parseColor("#455A64");
+        String st = (m.status == null || m.status.isEmpty()) ? "PENDING" : m.status;
+        h.tvStatus.setText(st);
+
+        int color;
+        switch (st.toUpperCase(Locale.ROOT)) {
+            case "PENDING":    color = Color.parseColor("#F9A825"); break; // vàng
+            case "CONFIRMED":  color = Color.parseColor("#2E7D32"); break; // xanh lá
+            case "CANCELLED":  color = Color.parseColor("#C62828"); break; // đỏ
+            case "COMPLETED":  color = Color.parseColor("#1565C0"); break; // xanh dương
+            default:           color = Color.DKGRAY;
+        }
         h.tvStatus.setTextColor(color);
+
 
         // ảnh sân (nếu có tên drawable)
         if (m.courtImage != null && !m.courtImage.isEmpty()) {
