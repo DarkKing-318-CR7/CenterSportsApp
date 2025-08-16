@@ -1,3 +1,4 @@
+<!-- res/layout/fragment_account.xml -->
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent" android:layout_height="match_parent"
     android:padding="16dp" android:paddingBottom="88dp"
@@ -34,14 +35,14 @@
             </LinearLayout>
         </LinearLayout>
 
-        <!-- Thông tin -->
+        <!-- Thông tin (mặc định KHÔNG cho sửa) -->
         <TextView android:text="Họ tên" android:textStyle="bold"
             android:layout_marginTop="16dp"
             android:layout_width="wrap_content" android:layout_height="wrap_content"/>
         <EditText
             android:id="@+id/etFullName"
             android:layout_width="match_parent" android:layout_height="wrap_content"
-            android:hint="Nhập họ tên"/>
+            android:hint="Nhập họ tên" android:enabled="false"/>
 
         <TextView android:text="Số điện thoại" android:textStyle="bold"
             android:layout_marginTop="12dp"
@@ -49,7 +50,8 @@
         <EditText
             android:id="@+id/etPhone"
             android:layout_width="match_parent" android:layout_height="wrap_content"
-            android:inputType="phone" android:hint="Nhập số điện thoại"/>
+            android:inputType="phone" android:hint="Nhập số điện thoại"
+            android:enabled="false"/>
 
         <TextView android:text="Email" android:textStyle="bold"
             android:layout_marginTop="12dp"
@@ -57,41 +59,65 @@
         <EditText
             android:id="@+id/etEmail"
             android:layout_width="match_parent" android:layout_height="wrap_content"
-            android:inputType="textEmailAddress" android:hint="Nhập email"/>
+            android:inputType="textEmailAddress" android:hint="Nhập email"
+            android:enabled="false"/>
 
-        <TextView
-            android:text="Vai trò" android:textStyle="bold"
+        <!-- Địa chỉ (mới) -->
+        <TextView android:text="Địa chỉ" android:textStyle="bold"
             android:layout_marginTop="12dp"
             android:layout_width="wrap_content" android:layout_height="wrap_content"/>
+        <EditText
+            android:id="@+id/etAddress"
+            android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:hint="Số nhà, đường, phường/xã, quận/huyện, tỉnh/thành"
+            android:maxLines="3" android:enabled="false"/>
 
-        <TextView
-            android:id="@+id/tvRole"
-            android:textColor="#666"
+        <!-- Ngày sinh (mới) -->
+        <TextView android:text="Ngày sinh" android:textStyle="bold"
+            android:layout_marginTop="12dp"
             android:layout_width="wrap_content" android:layout_height="wrap_content"/>
+        <EditText
+            android:id="@+id/etDob"
+            android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:hint="yyyy-MM-dd"
+            android:focusable="false" android:clickable="true"
+            android:enabled="false"/>
 
         <TextView
             android:text="Ngày tạo tài khoản" android:textStyle="bold"
             android:layout_marginTop="12dp"
             android:layout_width="wrap_content" android:layout_height="wrap_content"/>
-
         <TextView
             android:id="@+id/tvCreatedAt"
             android:textColor="#666"
             android:layout_width="wrap_content" android:layout_height="wrap_content"/>
 
-
-
-        <!-- Hành động -->
+        <!-- Hành động: Sửa / Lưu / Hủy -->
         <Button
-            android:id="@+id/btnSave"
-            android:text="Lưu thay đổi"
+            android:id="@+id/btnEdit"
+            android:text="Sửa thông tin"
             android:layout_marginTop="16dp"
             android:layout_width="match_parent" android:layout_height="wrap_content"/>
 
         <Button
+            android:id="@+id/btnSave"
+            android:text="Lưu thay đổi"
+            android:layout_marginTop="8dp"
+            android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:visibility="gone"/>
+
+        <Button
+            android:id="@+id/btnCancel"
+            android:text="Hủy"
+            android:layout_marginTop="8dp"
+            android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:visibility="gone"/>
+
+        <!-- Giữ hai nút dưới như cũ -->
+        <Button
             android:id="@+id/btnChangePass"
             android:text="Đổi mật khẩu"
-            android:layout_marginTop="8dp"
+            android:layout_marginTop="16dp"
             android:layout_width="match_parent" android:layout_height="wrap_content"/>
 
         <Button
@@ -99,5 +125,6 @@
             android:text="Đăng xuất"
             android:layout_marginTop="8dp"
             android:layout_width="match_parent" android:layout_height="wrap_content"/>
+
     </LinearLayout>
 </ScrollView>

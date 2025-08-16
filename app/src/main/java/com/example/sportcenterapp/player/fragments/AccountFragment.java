@@ -42,7 +42,6 @@ public class AccountFragment extends Fragment {
         ivAvatar     = v.findViewById(R.id.ivAvatar);
         tvUsername   = v.findViewById(R.id.tvUsername);
         tvVip        = v.findViewById(R.id.tvVip);
-        tvRole       = v.findViewById(R.id.tvRole);
         tvCreatedAt  = v.findViewById(R.id.tvCreatedAt);
         etFullName   = v.findViewById(R.id.etFullName);
         etPhone      = v.findViewById(R.id.etPhone);
@@ -71,7 +70,6 @@ public class AccountFragment extends Fragment {
         }
         tvUsername.setText(user.username != null ? user.username : "-");
         tvVip.setText(user.vip ? "VIP" : "Thành viên thường");
-        tvRole.setText(user.role != null && user.role.equalsIgnoreCase("admin") ? "Admin" : "Player");
         tvCreatedAt.setText(user.createdAt != null ? user.createdAt : "-");
 
         etFullName.setText(user.fullName != null ? user.fullName : "");
