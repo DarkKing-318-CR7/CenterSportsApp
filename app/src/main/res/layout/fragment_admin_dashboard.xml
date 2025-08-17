@@ -1,0 +1,138 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:orientation="vertical"
+    android:padding="16dp"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <!-- Nút chuyển: Đơn hàng / Đặt sân -->
+    <com.google.android.material.button.MaterialButtonToggleGroup
+        android:id="@+id/toggleGroup"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:singleSelection="true"
+        app:selectionRequired="true">
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnToggleOrders"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Đơn hàng"/>
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnToggleBookings"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Đặt sân"/>
+    </com.google.android.material.button.MaterialButtonToggleGroup>
+
+    <!-- Bộ lọc: ĐƠN HÀNG -->
+    <com.google.android.material.chip.ChipGroup
+        android:id="@+id/chipOrderFilters"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="12dp"
+        app:singleSelection="true">
+
+        <com.google.android.material.chip.Chip
+            android:id="@+id/chipDashAll"
+            style="@style/Widget.MaterialComponents.Chip.Filter"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Tất cả"
+            android:checkable="true"
+            android:checked="true"
+            android:tag="ALL"
+            android:layout_marginEnd="8dp"/>
+
+        <com.google.android.material.chip.Chip
+            android:id="@+id/chipDashPending"
+            style="@style/Widget.MaterialComponents.Chip.Filter"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Chờ duyệt"
+            android:checkable="true"
+            android:tag="PENDING"
+            android:layout_marginEnd="8dp"/>
+
+        <com.google.android.material.chip.Chip
+            android:id="@+id/chipDashApproved"
+            style="@style/Widget.MaterialComponents.Chip.Filter"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Đã duyệt"
+            android:checkable="true"
+            android:tag="APPROVED"
+            android:layout_marginEnd="8dp"/>
+
+        <com.google.android.material.chip.Chip
+            android:id="@+id/chipDashCancelled"
+            style="@style/Widget.MaterialComponents.Chip.Filter"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Đã huỷ"
+            android:checkable="true"
+            android:tag="CANCELLED"/>
+    </com.google.android.material.chip.ChipGroup>
+
+    <!-- Bộ lọc: ĐẶT SÂN -->
+    <com.google.android.material.chip.ChipGroup
+        android:id="@+id/chipBookingFilters"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        app:singleSelection="true"
+        android:visibility="gone">
+
+        <com.google.android.material.chip.Chip
+            android:id="@+id/chipBkAll"
+            style="@style/Widget.MaterialComponents.Chip.Filter"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Tất cả"
+            android:checkable="true"
+            android:checked="true"
+            android:tag="ALL"
+            android:layout_marginEnd="8dp"/>
+
+        <com.google.android.material.chip.Chip
+            android:id="@+id/chipBkPending"
+            style="@style/Widget.MaterialComponents.Chip.Filter"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Chờ duyệt"
+            android:checkable="true"
+            android:tag="PENDING"
+            android:layout_marginEnd="8dp"/>
+
+        <com.google.android.material.chip.Chip
+            android:id="@+id/chipBkApproved"
+            style="@style/Widget.MaterialComponents.Chip.Filter"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Đã duyệt"
+            android:checkable="true"
+            android:tag="APPROVED"
+            android:layout_marginEnd="8dp"/>
+
+        <com.google.android.material.chip.Chip
+            android:id="@+id/chipBkCancelled"
+            style="@style/Widget.MaterialComponents.Chip.Filter"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Đã huỷ"
+            android:checkable="true"
+            android:tag="CANCELLED"/>
+    </com.google.android.material.chip.ChipGroup>
+
+    <!-- Danh sách -->
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/rvList"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:layout_marginTop="12dp"/>
+</LinearLayout>

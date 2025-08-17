@@ -6,39 +6,44 @@
     android:layout_height="wrap_content"
     android:layout_marginBottom="8dp"
     app:cardCornerRadius="12dp"
-    app:cardElevation="2dp">
+    app:cardElevation="2dp"
+    android:clickable="true"
+    android:focusable="true"
+    android:foreground="?attr/selectableItemBackground"
+    app:rippleColor="?attr/colorControlHighlight">
 
-    <LinearLayout
-        android:orientation="vertical"
-        android:padding="12dp"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+    <!-- phần nội dung  -->
+<LinearLayout
+android:orientation="vertical"
+android:padding="12dp"
+android:layout_width="match_parent"
+android:layout_height="wrap_content">
 
-        <TextView
-            android:id="@+id/tvTitle"
-            android:textStyle="bold"
-            android:textSize="15sp"
-            android:textColor="#111"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"/>
+<TextView
+    android:id="@+id/tvTitle"
+    android:textStyle="bold"
+    android:textSize="15sp"
+    android:textColor="#111"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"/>
 
-        <TextView
-            android:id="@+id/tvSubtitle"
-            android:textColor="#666"
-            android:layout_marginTop="2dp"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"/>
+<TextView
+    android:id="@+id/tvSubtitle"
+    android:textColor="#666"
+    android:layout_marginTop="2dp"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"/>
 
-        <TextView
-            android:id="@+id/tvStatus"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="6dp"
-            android:paddingLeft="10dp"
-            android:paddingRight="10dp"
-            android:paddingTop="4dp"
-            android:paddingBottom="4dp"
-            android:textColor="@android:color/white"
-            android:textStyle="bold"/>
-    </LinearLayout>
-</com.google.android.material.card.MaterialCardView>
+<TextView
+    android:id="@+id/tvStatus"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:layout_marginTop="6dp"
+    android:paddingLeft="10dp"
+    android:paddingRight="10dp"
+    android:paddingTop="4dp"
+    android:paddingBottom="4dp"
+    android:textColor="@android:color/white"
+    android:textStyle="bold"/>
+</LinearLayout>
+    </com.google.android.material.card.MaterialCardView>

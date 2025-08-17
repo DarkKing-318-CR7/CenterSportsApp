@@ -29,7 +29,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
     private static final String DB_NAME = "centerbooking.db";
     // Tăng version để áp dụng schema mới (orders/order_items)
-    private static final int DB_VERSION = 4;
+    private static final int DB_VERSION = 5;
 
     public DatabaseHelper(Context ctx) {
         super(ctx, DB_NAME, null, DB_VERSION);
@@ -40,16 +40,18 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         // ==== Users ====
         db.execSQL("CREATE TABLE IF NOT EXISTS Users (" +
                 "id INTEGER PRIMARY KEY AUTOINCREMENT," +
-                "username TEXT UNIQUE," +
-                "password TEXT," +                         // <— mật khẩu vẫn có
+                "username TEXT NOT NULL UNIQUE," +
+                "password TEXT NOT NULL," +                          // demo: vẫn dùng plaintext
                 "full_name TEXT," +
                 "phone TEXT," +
                 "email TEXT," +
-                "vip INTEGER DEFAULT 0," +
+                "vip INTEGER NOT NULL DEFAULT 0 CHECK (vip IN (0,1))," +
                 "avatar TEXT," +
-                "created_at TEXT DEFAULT (datetime('now','localtime'))," +
-                "role TEXT DEFAULT 'player'" +
-                ")");
+                "role TEXT NOT NULL DEFAULT 'player' CHECK (role IN ('player','admin'))," +
+                "created_at TEXT NOT NULL DEFAULT (datetime('now','localtime'))" +
+                ")"
+        );
+
 
 
 
@@ -120,6 +122,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 "id INTEGER PRIMARY KEY AUTOINCREMENT," +
                 "user_id INTEGER NOT NULL," +
                 "total REAL NOT NULL," +
+                "status TEXT NOT NULL DEFAULT 'pending'," +   // <— CỘT NÀY
+                "booking_id INTEGER," +
                 "created_at TEXT NOT NULL" +
                 ")");
 
@@ -203,7 +207,56 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                     ")");
             db.execSQL("ALTER TABLE Bookings ADD COLUMN created_at TEXT DEFAULT (datetime('now','localtime'))");
         }
+        try { db.execSQL("ALTER TABLE orders ADD COLUMN status TEXT NOT NULL DEFAULT 'pending'"); } catch (Exception ignored) {}
+        try { db.execSQL("ALTER TABLE orders ADD COLUMN booking_id INTEGER"); } catch (Exception ignored) {}
+        try { db.execSQL("ALTER TABLE orders ADD COLUMN created_at TEXT NOT NULL DEFAULT (datetime('now','localtime'))"); } catch (Exception ignored) {}
+        if (oldV < 5) {
+            try { db.execSQL("ALTER TABLE orders ADD COLUMN status TEXT DEFAULT 'pending'"); } catch (Exception ignore) {}
+        }
     }
+
+    // Dòng model phục vụ UI list Admin (nếu bạn chưa có class riêng)
+    public static class OrderRow {
+        public long id; public String code; public String customer;
+        public double total; public String status; public String createdAt; public @Nullable String courtName;
+        public OrderRow(long id, String code, String customer, double total, String status, String createdAt, @Nullable String courtName) {
+            this.id=id; this.code=code; this.customer=customer; this.total=total; this.status=status; this.createdAt=createdAt; this.courtName=courtName;
+        }
+    }
+
+    public List<OrderRow> getOrdersAdmin(@Nullable String statusFilter) {
+        ArrayList<OrderRow> out = new ArrayList<>();
+        String base =
+                "SELECT o.id, IFNULL(u.full_name,u.username) AS customer, o.total, o.status, o.created_at, " +
+                        "       c.name AS court_name " +
+                        "FROM orders o " +
+                        "JOIN Users u ON u.id=o.user_id " +
+                        "LEFT JOIN Bookings b ON b.id=o.booking_id " +
+                        "LEFT JOIN Courts c ON c.id=b.court_id ";
+        String tail = " ORDER BY o.id DESC";
+        String sql; String[] args = null;
+        if (statusFilter==null || "all".equalsIgnoreCase(statusFilter)) { sql = base + tail; }
+        else { sql = base + " WHERE o.status=? " + tail; args = new String[]{ statusFilter }; }
+
+        try (Cursor c = getReadableDatabase().rawQuery(sql, args)) {
+            while (c.moveToNext()) {
+                long id = c.getLong(0);
+                out.add(new OrderRow(
+                        id, "#OD-" + id, c.getString(1), c.getDouble(2),
+                        c.getString(3), c.getString(4),
+                        c.isNull(5) ? null : c.getString(5)
+                ));
+            }
+        }
+        return out;
+    }
+
+    public void updateOrderStatus(long orderId, String status) {
+        ContentValues cv = new ContentValues();
+        cv.put("status", status);
+        getWritableDatabase().update("orders", cv, "id=?", new String[]{ String.valueOf(orderId) });
+    }
+
 
     // ===== Users API =====
     // DatabaseHelper.java
@@ -652,6 +705,14 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         }
         return list;
     }
+
+    /** Admin: cập nhật trạng thái đơn hàng: "pending" | "approved" | "cancelled" | "fulfilled"(nếu dùng) */
+    public boolean updateStatus(long orderId, String newStatus) {
+        ContentValues v = new ContentValues();
+        v.put("status", newStatus);
+        return getWritableDatabase().update("orders", v, "id=?", new String[]{String.valueOf(orderId)}) > 0;
+    }
+
 
 
     //admin
