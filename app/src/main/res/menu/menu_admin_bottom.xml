@@ -1,6 +1,6 @@
 <!-- res/menu/menu_admin_bottom.xml -->
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
-    <item android:id="@+id/menu_dashboard" android:icon="@drawable/ic_home"               android:title="Tổng quan"/>
+    <item android:id="@+id/menu_dashboard" android:icon="@drawable/ic_home"               android:title="Home"/>
     <item android:id="@+id/menu_orders"    android:icon="@drawable/ic_orders"             android:title="Đơn hàng"/>
     <item android:id="@+id/menu_bookings"  android:icon="@drawable/ic_calendar_history"   android:title="Đặt sân"/>
     <item android:id="@+id/menu_inventory" android:icon="@drawable/ic_shop"               android:title="Kho và Sân"/>
