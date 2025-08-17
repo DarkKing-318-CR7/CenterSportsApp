@@ -102,10 +102,15 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
         // Seed products
         db.execSQL("INSERT INTO Products(name,price,image,stock) VALUES " +
-                "('Nước suối Aquafina', 8000, 'product_water',100)," +
-                "('Bóng đá Size 5', 150000, 'product_soccer_ball',12)," +
-                "('Áo thể thao Nike', 250000, 'product_tshirt',12)," +
-                "('Vợt cầu lông Yonex', 350000, 'product_badminton_racket',23)");
+                "('Bóng đá Size 5', 150000, 'product_soccer_ball', 12)," +
+                "('Áo thể thao Nike', 250000, 'product_tshirt', 12)," +
+                "('Vợt cầu lông Yonex', 350000, 'product_badminton_racket', 23)," +
+                "('Giày chạy Adidas', 800000, 'product_running_shoes', 15)," +
+                "('Găng tay thủ môn', 180000, 'product_goalkeeper_gloves', 10)," +
+                "('Bóng rổ Spalding', 320000, 'product_basketball', 8)," +
+                "('Dây nhảy thể lực', 50000, 'product_jump_rope', 25)," +
+                "('Thảm tập yoga', 200000, 'product_yoga_mat', 20)");
+
 
         // ==== CartItems ====
         db.execSQL("CREATE TABLE IF NOT EXISTS CartItems (" +

@@ -16,7 +16,7 @@
             android:layout_width="match_parent"
             android:layout_height="120dp"
             android:scaleType="centerCrop"
-            android:src="@drawable/placeholder_court"/>
+            android:contentDescription="Product" />
 
         <LinearLayout
             android:orientation="vertical" android:padding="10dp"
