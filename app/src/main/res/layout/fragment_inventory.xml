@@ -2,19 +2,45 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:orientation="vertical"
+    android:padding="16dp"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <com.google.android.material.tabs.TabLayout
-        android:id="@+id/tabLayout"
+    <!-- Chuyển giữa Sản phẩm / Sân -->
+    <com.google.android.material.button.MaterialButtonToggleGroup
+        android:id="@+id/invToggle"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        app:tabIndicatorColor="@color/purple_500"
-        app:tabSelectedTextColor="@color/purple_500" />
+        app:singleSelection="true"
+        app:selectionRequired="true">
 
-    <androidx.viewpager2.widget.ViewPager2
-        android:id="@+id/viewPager"
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnProducts"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Sản phẩm"/>
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnCourts"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Sân"/>
+    </com.google.android.material.button.MaterialButtonToggleGroup>
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btnAdd"
+        style="?attr/materialButtonOutlinedStyle"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="12dp"
+        android:text="Thêm mới"/>
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/rvList"
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_weight="1" />
+        android:layout_marginTop="12dp"
+        android:layout_weight="1"/>
 </LinearLayout>

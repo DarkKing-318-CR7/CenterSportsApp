@@ -63,13 +63,14 @@ public class CartAdapter extends RecyclerView.Adapter<CartAdapter.VH> {
         h.img.setImageResource(resId == 0 ? R.drawable.placeholder_court : resId);
 
         h.btnMinus.setOnClickListener(v -> {
-            int newQty = qty - 1;
+            int newQty = Math.max(qty - 1, 0);      // không xuống âm
             if (cb != null) cb.change(productId, newQty);
         });
         h.btnPlus.setOnClickListener(v -> {
-            int newQty = qty + 1;
+            int newQty = qty + 1;                   // tăng 1, Fragment sẽ kẹp theo stock
             if (cb != null) cb.change(productId, newQty);
         });
+
     }
 
     @Override public int getItemCount(){ return data.size(); }

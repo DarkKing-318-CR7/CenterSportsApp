@@ -1,11 +1,11 @@
 package com.example.sportcenterapp.admin.fragments;
 
-import android.annotation.SuppressLint;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
-import android.os.Build;
 import android.os.Bundle;
-import android.view.*;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -22,11 +22,11 @@ import com.google.android.material.chip.Chip;
 import com.google.android.material.chip.ChipGroup;
 
 import java.text.NumberFormat;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Locale;
 
 public class OrdersFragment extends Fragment {
-
-    public static final String ACTION_ORDERS_CHANGED = "com.example.sportcenterapp.ACTION_ORDERS_CHANGED";
 
     private RecyclerView rv;
     private ChipGroup chips;
@@ -35,7 +35,8 @@ public class OrdersFragment extends Fragment {
     private DatabaseHelper db;
     private String uiStatus = "ALL"; // ALL|PENDING|APPROVED|CANCELLED
 
-    @Nullable @Override
+    @Nullable
+    @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         return inflater.inflate(R.layout.fragment_admin_orders, container, false);
     }
@@ -64,7 +65,6 @@ public class OrdersFragment extends Fragment {
             load();
         });
 
-        // nếu layout cũ còn chip "Hoàn tất" -> đổi text trong xml thành "Đã duyệt" và tag="APPROVED"
         Chip chipAll = v.findViewById(R.id.chipAll);
         if (chipAll != null) chipAll.setChecked(true);
 
@@ -72,7 +72,7 @@ public class OrdersFragment extends Fragment {
     }
 
     private void setStatus(long orderId, String newStatusDb) {
-        db.updateOrderStatus(orderId, newStatusDb);
+        db.updateOrderStatus(orderId, newStatusDb); // "approved" | "cancelled"
         load();
     }
 
@@ -135,27 +135,29 @@ public class OrdersFragment extends Fragment {
                 long id       = c.getLong(0);
                 String name   = c.getString(1);
                 double total  = c.getDouble(2);
-                String dbStat = c.getString(3);
-                String uiStat = mapDbToUi(dbStat);
+                String dbStat = c.getString(3);          // pending/approved/cancelled/fulfilled...
+                String uiCode = mapDbToUi(dbStat);       // -> PENDING/APPROVED/CANCELLED
                 String summary= c.getString(5);
 
                 String sub = summary.isEmpty()
                         ? ("Tổng: " + fmt(total))
                         : (summary + " • Tổng: " + fmt(total));
 
-                list.add(Row.item(id, "#OD-" + id, name, total, uiStat, sub));
+                list.add(Row.item(id, "#OD-" + id, name, total, uiCode, sub));
             }
         }
         return list;
     }
 
+    /** Chuẩn hoá TRẠNG THÁI thành mã cố định cho UI: PENDING/APPROVED/CANCELLED */
     private String mapDbToUi(String s) {
         if (s == null) return "PENDING";
         switch (s.toLowerCase(Locale.ROOT)) {
             case "pending":   return "PENDING";
-            case "approved":  return "APPROVED";
+            case "approved":
+            case "fulfilled":
+            case "paid":      return "APPROVED";
             case "cancelled": return "CANCELLED";
-            case "fulfilled": return "APPROVED"; // nếu cũ còn "fulfilled" coi như đã duyệt
         }
         return "PENDING";
     }
@@ -177,7 +179,6 @@ public class OrdersFragment extends Fragment {
         RecyclerView rvItems = v.findViewById(R.id.rvOrderItems);
         rvItems.setLayoutManager(new LinearLayoutManager(requireContext()));
 
-        // Lấy items an toàn
         List<OrderItem> items;
         try {
             items = db.getOrderItems((int) orderId);
@@ -197,9 +198,7 @@ public class OrdersFragment extends Fragment {
         dlg.show();
     }
 
-
     /* ===== Adapter ===== */
-
     private static class Adapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
         interface ActionListener {
             void onApprove(long orderId);
@@ -284,7 +283,7 @@ public class OrdersFragment extends Fragment {
             if (s==null) return R.drawable.bg_status_pending;
             switch (s){
                 case "PENDING":   return R.drawable.bg_status_pending;
-                case "APPROVED":  return R.drawable.bg_status_done;   // dùng nền xanh có sẵn
+                case "APPROVED":  return R.drawable.bg_status_done;
                 case "CANCELLED": return R.drawable.bg_status_cancel;
             }
             return R.drawable.bg_status_pending;
@@ -313,8 +312,8 @@ public class OrdersFragment extends Fragment {
 
     /* Adapter items cho bottom sheet */
     private static class ItemsAdapter extends RecyclerView.Adapter<ItemsAdapter.VH> {
-        private final java.util.List<OrderItem> data;
-        ItemsAdapter(java.util.List<OrderItem> d) { this.data = d; }
+        private final List<OrderItem> data;
+        ItemsAdapter(List<OrderItem> d) { this.data = d; }
 
         static class VH extends RecyclerView.ViewHolder {
             TextView tv;
