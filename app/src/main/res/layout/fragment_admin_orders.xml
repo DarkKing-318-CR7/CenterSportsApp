@@ -2,59 +2,58 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:orientation="vertical"
+    android:padding="12dp"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:padding="12dp">
+    android:layout_height="match_parent">
 
+    <!-- Bộ lọc trạng thái -->
     <com.google.android.material.chip.ChipGroup
         android:id="@+id/chipGroupOrders"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        app:singleSelection="true"
-        app:selectionRequired="true">
+        app:singleSelection="true">
 
         <com.google.android.material.chip.Chip
             android:id="@+id/chipAll"
-            style="@style/Widget.MaterialComponents.Chip.Choice"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Tất cả"
+            android:checkable="true"
             android:checked="true"
-            android:tag="ALL"/>
+            android:tag="ALL" />
 
         <com.google.android.material.chip.Chip
-            style="@style/Widget.MaterialComponents.Chip.Choice"
+            android:id="@+id/chipPending"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Chờ duyệt"
-            android:tag="PENDING"/>
+            android:checkable="true"
+            android:tag="PENDING" />
 
         <com.google.android.material.chip.Chip
-            style="@style/Widget.MaterialComponents.Chip.Choice"
+            android:id="@+id/chipApproved"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Đã thanh toán"
-            android:tag="PAID"/>
+            android:text="Đã duyệt"
+            android:checkable="true"
+            android:tag="APPROVED" />
 
         <com.google.android.material.chip.Chip
-            style="@style/Widget.MaterialComponents.Chip.Choice"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Hoàn tất"
-            android:tag="DONE"/>
-
-        <com.google.android.material.chip.Chip
-            style="@style/Widget.MaterialComponents.Chip.Choice"
+            android:id="@+id/chipCancelled"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Hủy"
-            android:tag="CANCELLED"/>
+            android:checkable="true"
+            android:tag="CANCELLED" />
     </com.google.android.material.chip.ChipGroup>
 
+    <!-- Danh sách đơn -->
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/rvOrders"
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_marginTop="8dp"
-        android:layout_weight="1" />
+        android:layout_weight="1"
+        android:layout_marginTop="12dp"
+        android:clipToPadding="false"
+        android:paddingBottom="12dp"/>
 </LinearLayout>

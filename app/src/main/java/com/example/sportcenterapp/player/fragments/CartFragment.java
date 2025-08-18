@@ -1,12 +1,15 @@
 package com.example.sportcenterapp.player.fragments;
 
 import android.os.Bundle;
-import android.view.*;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import androidx.annotation.*;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -42,10 +45,11 @@ public class CartFragment extends Fragment {
         rv.setLayoutManager(new LinearLayoutManager(getContext()));
         rv.setClipToPadding(false);
 
-        loadCart();
-
+        // Đổi nhãn: không còn “Thanh toán” trong app
+        btnCheckout.setText("Đặt hàng");
         btnCheckout.setOnClickListener(vw -> doCheckout());
 
+        loadCart();
         return v;
     }
 
@@ -62,45 +66,41 @@ public class CartFragment extends Fragment {
         tvTotal.setText(String.format(Locale.getDefault(), "Tổng: %,.0fđ", db.getCartTotal(userId)));
     }
 
-    /** Tạo Order + chuyển sang OrdersFragment */
+    /** Tạo Order (status=pending) + chuyển sang lịch sử đơn; KHÔNG thanh toán trong app */
     private void doCheckout() {
         if (db.getCartItems(userId).isEmpty()) {
             Toast.makeText(getContext(), "Giỏ hàng trống!", Toast.LENGTH_SHORT).show();
             return;
         }
 
-        // Nếu DatabaseHelper.checkout trả về id đơn hàng → dùng; nếu trả void thì coi như thành công.
         long orderId;
         try {
-            // ưu tiên hàm trả về id
-            orderId = db.checkoutFromCart(userId); // <-- nếu project bạn hiện trả void, đổi sang gọi db.checkout(userId); và set orderId = 1
+            // Ghi đơn vào bảng orders với status mặc định 'pending'
+            orderId = db.checkoutFromCart(userId);
         } catch (Throwable ignored) {
-            // fallback nếu checkout hiện tại là void
             db.checkoutFromCart(userId);
             orderId = 1;
         }
 
-        // cập nhật giao diện/badge
+        // Cập nhật UI/badge
         loadCart();
         if (getActivity() instanceof com.example.sportcenterapp.player.PlayerActivity) {
             ((com.example.sportcenterapp.player.PlayerActivity) getActivity()).refreshCartCount();
         }
 
+        // Thông báo kiểu “đặt hàng” – thanh toán tại quầy
         Toast.makeText(getContext(),
-                orderId > 0 ? "Thanh toán thành công!" : "Đã xử lý thanh toán",
+                orderId > 0 ? "Đã tạo đơn. Thanh toán tại quầy." : "Đã tạo đơn.",
                 Toast.LENGTH_SHORT).show();
 
-        // Điều hướng sang OrdersFragment để xem lịch sử đơn
+        // Điều hướng sang OrdersFragment (lịch sử đơn của người chơi)
         try {
             requireActivity().getSupportFragmentManager().beginTransaction()
                     .replace(R.id.player_nav_host, new OrdersFragment())
                     .commit();
-            // cập nhật subtitle
             MaterialToolbar tb = requireActivity().findViewById(R.id.topAppBar);
             if (tb != null) tb.setSubtitle("Lịch sử đơn hàng");
-
         } catch (Exception e) {
-            // nếu class path khác, dùng fully-qualified class
             requireActivity().getSupportFragmentManager().beginTransaction()
                     .replace(R.id.player_nav_host,
                             new com.example.sportcenterapp.player.fragments.OrdersFragment())

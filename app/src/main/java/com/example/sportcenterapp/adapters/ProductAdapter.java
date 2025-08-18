@@ -51,13 +51,13 @@ public class ProductAdapter extends RecyclerView.Adapter<ProductAdapter.VH> {
 
         // Các view có thể không tồn tại trong layout
         if (h.tvStock != null) h.tvStock.setText("Kho: " + p.stock);
-        if (h.ivImage != null) {
+        if (h.img != null) {
             int resId = context.getResources().getIdentifier(
                     (p.image == null || p.image.isEmpty()) ? "ic_product" : p.image,
                     "drawable",
                     context.getPackageName()
             );
-            h.ivImage.setImageResource(resId == 0 ? R.drawable.ic_product : resId);
+            h.img.setImageResource(resId == 0 ? R.drawable.ic_product : resId);
         }
 
         if (h.btnAdd != null) {
@@ -71,27 +71,18 @@ public class ProductAdapter extends RecyclerView.Adapter<ProductAdapter.VH> {
     @Override public int getItemCount() { return items.size(); }
 
     static class VH extends RecyclerView.ViewHolder {
-        final TextView tvName, tvPrice;
-        @Nullable final TextView tvStock;   // optional
-        @Nullable final ImageView ivImage;  // optional
-        @Nullable final Button btnAdd;      // optional
+        ImageView img;
+        TextView tvName, tvPrice,tvStock;
+        Button btnAdd;
+        VH(@NonNull View v) {
+            super(v);
+            img    = v.findViewById(R.id.img);      // <-- thêm
+            tvName = v.findViewById(R.id.tvName);
+            tvPrice= v.findViewById(R.id.tvPrice);
+            tvStock =v.findViewById(R.id.tvStock);
+            btnAdd = v.findViewById(R.id.btnAdd);
 
-        VH(@NonNull View itemView) {
-            super(itemView);
-            tvName  = itemView.findViewById(R.id.tvName);
-            tvPrice = itemView.findViewById(R.id.tvPrice);
-
-            TextView tmpStock;
-            try { tmpStock = itemView.findViewById(R.id.tvStock); } catch (Exception e) { tmpStock = null; }
-            tvStock = tmpStock;
-
-            ImageView tmpIv;
-            try { tmpIv = itemView.findViewById(R.id.ivImage); } catch (Exception e) { tmpIv = null; }
-            ivImage = tmpIv;
-
-            Button tmpAdd;
-            try { tmpAdd = itemView.findViewById(R.id.btnAdd); } catch (Exception e) { tmpAdd = null; }
-            btnAdd = tmpAdd;
         }
     }
+
 }
