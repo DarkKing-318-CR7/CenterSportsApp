@@ -6,7 +6,6 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <!-- Bộ lọc trạng thái -->
     <com.google.android.material.chip.ChipGroup
         android:id="@+id/chipGroupOrders"
         android:layout_width="match_parent"
@@ -47,7 +46,7 @@
             android:tag="CANCELLED" />
     </com.google.android.material.chip.ChipGroup>
 
-    <!-- Danh sách đơn -->
+
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/rvOrders"
         android:layout_width="match_parent"
@@ -55,5 +54,7 @@
         android:layout_weight="1"
         android:layout_marginTop="12dp"
         android:clipToPadding="false"
-        android:paddingBottom="12dp"/>
+        android:paddingStart="12dp"
+        android:paddingEnd="12dp"
+        android:paddingBottom="24dp"/>
 </LinearLayout>

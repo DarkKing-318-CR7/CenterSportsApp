@@ -1,29 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent" android:layout_height="wrap_content">
     <LinearLayout
         android:orientation="vertical" android:padding="16dp"
         android:layout_width="match_parent" android:layout_height="wrap_content">
 
-        <EditText android:id="@+id/etName" android:hint="Tên sân"
-            android:layout_width="match_parent" android:layout_height="wrap_content"/>
-        <EditText android:id="@+id/etSport" android:hint="Bộ môn (VD: Tennis/Badminton)"
-            android:layout_marginTop="8dp"
-            android:layout_width="match_parent" android:layout_height="wrap_content"/>
-        <EditText android:id="@+id/etSurface" android:hint="Mặt sân (VD: Grass/Clay/Wood)"
-            android:layout_marginTop="8dp"
+        <EditText
+            android:id="@+id/edCourtName"
+            android:hint="Tên sân"
             android:layout_width="match_parent" android:layout_height="wrap_content"/>
 
-        <CheckBox android:id="@+id/cbIndoor" android:text="Trong nhà"
-            android:layout_marginTop="8dp"
+        <EditText
+            android:id="@+id/edCourtSport"
+            android:hint="Môn (VD: Bóng đá/Cầu lông/…)"
+            android:layout_width="match_parent" android:layout_height="wrap_content"/>
+
+        <EditText
+            android:id="@+id/edCourtSurface"
+            android:hint="Mặt sân (VD: Cỏ nhân tạo, Gỗ, PU…)"
+            android:layout_width="match_parent" android:layout_height="wrap_content"/>
+
+        <Switch
+            android:id="@+id/swCourtIndoor"
+            android:text="Trong nhà"
             android:layout_width="wrap_content" android:layout_height="wrap_content"/>
 
-        <EditText android:id="@+id/etPrice" android:hint="Giá/giờ"
+        <EditText
+            android:id="@+id/edCourtPrice"
+            android:hint="Giá/giờ (đ)"
             android:inputType="numberDecimal"
-            android:layout_marginTop="8dp"
             android:layout_width="match_parent" android:layout_height="wrap_content"/>
 
-        <EditText android:id="@+id/etImage" android:hint="Ảnh (tên drawable hoặc url)"
-            android:layout_marginTop="8dp"
+        <EditText
+            android:id="@+id/edCourtImage"
+            android:hint="Ảnh (tên drawable hoặc URI)"
             android:layout_width="match_parent" android:layout_height="wrap_content"/>
+
+        <Button
+            android:id="@+id/btnPickCourtImage"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Chọn ảnh từ thư viện"
+            android:layout_marginTop="8dp"/>
     </LinearLayout>
 </ScrollView>

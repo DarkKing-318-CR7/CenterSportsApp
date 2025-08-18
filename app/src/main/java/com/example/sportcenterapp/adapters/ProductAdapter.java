@@ -1,6 +1,7 @@
 package com.example.sportcenterapp.adapters;
 
 import android.content.Context;
+import android.net.Uri;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -8,14 +9,16 @@ import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import androidx.annotation.Nullable;
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.sportcenterapp.R;
 import com.example.sportcenterapp.models.Product;
 
+import java.io.File;
 import java.util.List;
+import java.util.Locale;
 
 public class ProductAdapter extends RecyclerView.Adapter<ProductAdapter.VH> {
 
@@ -46,25 +49,19 @@ public class ProductAdapter extends RecyclerView.Adapter<ProductAdapter.VH> {
     @Override
     public void onBindViewHolder(@NonNull VH h, int pos) {
         Product p = items.get(pos);
-        h.tvName.setText(p.name);
-        h.tvPrice.setText(String.format("%,.0fđ", p.price));
 
-        // Các view có thể không tồn tại trong layout
+        h.tvName.setText(p.name);
+        h.tvPrice.setText(String.format(Locale.getDefault(), "%,.0fđ", p.price));
+
         if (h.tvStock != null) h.tvStock.setText("Kho: " + p.stock);
-        if (h.ivImage != null) {
-            int resId = context.getResources().getIdentifier(
-                    (p.image == null || p.image.isEmpty()) ? "ic_product" : p.image,
-                    "drawable",
-                    context.getPackageName()
-            );
-            h.ivImage.setImageResource(resId == 0 ? R.drawable.ic_product : resId);
-        }
+
+        // LOAD ẢNH: chấp nhận drawable name / absolute path / content://
+        if (h.ivImage != null) loadImage(context, h.ivImage, p.image);
 
         if (h.btnAdd != null) {
-            h.btnAdd.setOnClickListener(v -> {
-                if (onAdd != null) onAdd.onAdd(p);
-            });
             h.btnAdd.setVisibility(onAdd == null ? View.GONE : View.VISIBLE);
+            h.btnAdd.setEnabled(p.stock > 0);
+            h.btnAdd.setOnClickListener(v -> { if (onAdd != null) onAdd.onAdd(p); });
         }
     }
 
@@ -72,7 +69,7 @@ public class ProductAdapter extends RecyclerView.Adapter<ProductAdapter.VH> {
 
     static class VH extends RecyclerView.ViewHolder {
         final TextView tvName, tvPrice;
-        @Nullable final TextView tvStock;   // optional
+        @Nullable final TextView tvStock;   // optional trong layout
         @Nullable final ImageView ivImage;  // optional
         @Nullable final Button btnAdd;      // optional
 
@@ -92,6 +89,30 @@ public class ProductAdapter extends RecyclerView.Adapter<ProductAdapter.VH> {
             Button tmpAdd;
             try { tmpAdd = itemView.findViewById(R.id.btnAdd); } catch (Exception e) { tmpAdd = null; }
             btnAdd = tmpAdd;
+        }
+    }
+
+    /** Helper load ảnh từ drawable name / file path / content URI */
+    private static void loadImage(Context ctx, ImageView iv, @Nullable String img) {
+        if (img == null || img.trim().isEmpty()) {
+            iv.setImageResource(R.drawable.ic_product);
+            return;
+        }
+        img = img.trim();
+        try {
+            if (img.startsWith("content://") || img.startsWith("file://")) {
+                iv.setImageURI(Uri.parse(img));
+                return;
+            }
+            if (img.startsWith("/")) { // absolute path
+                iv.setImageURI(Uri.fromFile(new File(img)));
+                return;
+            }
+            // fallback: drawable
+            int resId = ctx.getResources().getIdentifier(img, "drawable", ctx.getPackageName());
+            iv.setImageResource(resId != 0 ? resId : R.drawable.ic_product);
+        } catch (Exception e) {
+            iv.setImageResource(R.drawable.ic_product);
         }
     }
 }
