@@ -11,6 +11,21 @@
     <string name="banner_image">Banner</string>
     <string name="promotion_image">Promotion</string>
     <string name="court_image">Court</string>
+    <string name="cd_avatar">Ảnh đại diện</string>
+    <string name="member_regular">Thành viên thường</string>
+    <string name="label_fullname">Họ tên</string>
+    <string name="label_phone">Điện thoại</string>
+    <string name="label_email">Email</string>
+    <string name="action_edit">Sửa thông tin</string>
+    <string name="action_save">Lưu</string>
+    <string name="action_cancel">Hủy</string>
+    <string name="action_change_password">Đổi mật khẩu</string>
+    <string name="action_booking_history">Lịch sử đặt sân</string>
+    <string name="action_order_history">Lịch sử mua hàng</string>
+    <string name="action_chat_support">Chat hỗ trợ</string>
+    <string name="action_logout">Đăng xuất</string>
+    <string name="action_view_details">Xem thông tin</string>
+    <string name="label_created_at">Tạo lúc</string>
 
 
 </resources>

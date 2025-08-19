@@ -31,12 +31,4 @@
             android:layout_gravity="bottom"
             app:menu="@menu/menu_player_bottom" />
     </androidx.coordinatorlayout.widget.CoordinatorLayout>
-
-    <!-- LEFT MENU: panel riêng trượt từ trái -->
-    <com.google.android.material.navigation.NavigationView
-        android:id="@+id/navView"
-        android:layout_width="wrap_content"
-        android:layout_height="match_parent"
-        android:layout_gravity="start"
-        app:menu="@menu/menu_drawer" />
 </androidx.drawerlayout.widget.DrawerLayout>

@@ -906,5 +906,21 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         return null;
     }
 
+    /** Cập nhật hồ sơ: họ tên, điện thoại, email, (avatar nếu != null) */
 
+
+    /** Đổi mật khẩu (kiểm tra mật khẩu cũ) */
+    public boolean updatePassword(int userId, String oldPass, String newPass) {
+        try (SQLiteDatabase db = getReadableDatabase();
+             Cursor c = db.rawQuery("SELECT password FROM Users WHERE id=?", new String[]{String.valueOf(userId)})) {
+            if (!c.moveToFirst()) return false;
+            String current = c.getString(0);
+            if (!current.equals(oldPass)) return false;    // demo: so sánh plain text
+        }
+        ContentValues v = new ContentValues();
+        v.put("password", newPass);
+        return getWritableDatabase().update("Users", v, "id=?", new String[]{String.valueOf(userId)}) > 0;
+    }
 }
+
+

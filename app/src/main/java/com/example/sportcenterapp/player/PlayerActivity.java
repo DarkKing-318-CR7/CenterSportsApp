@@ -43,30 +43,6 @@ public class PlayerActivity extends AppCompatActivity {
 //        topBar.inflateMenu(R.menu.menu_player_top);
 //        topBar.setOnMenuItemClickListener(this::onTopMenuClick);
 
-        // Nếu layout có DrawerLayout + NavigationView thì bật hamburger & xử lý click
-        drawer = findViewById(R.id.drawerLayout);
-        NavigationView navView = findViewById(R.id.navView);
-        if (drawer != null && navView != null) {
-            ActionBarDrawerToggle toggle =
-                    new ActionBarDrawerToggle(this, drawer, topBar,
-                            R.string.nav_open, R.string.nav_close);
-            drawer.addDrawerListener(toggle);
-            toggle.syncState();
-
-            navView.setNavigationItemSelectedListener(item -> {
-                int id = item.getItemId();
-                if (id == R.id.nav_booking_history) {
-                    replace(new BookingHistoryFragment(), "Lịch sử đặt sân"); // TODO: thay bằng BookingHistoryFragment khi có
-                } else if (id == R.id.nav_order_history) {
-                    replace(new OrdersFragment(), "Lịch sử mua hàng");  // TODO: thay bằng OrdersFragment khi có
-                } else if (id == R.id.nav_support_chat) {
-                    replace(new ChatSupportFragment(), "Chat hỗ trợ");       // TODO: thay bằng ChatSupportFragment khi có
-                }
-                drawer.closeDrawers();
-                return true;
-            });
-        }
-
         // Bottom Navigation
         bottom = findViewById(R.id.bottomNav);
         bottom.setOnItemSelectedListener(item -> {
