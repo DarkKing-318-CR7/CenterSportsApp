@@ -76,6 +76,7 @@ public class HomeFragment extends Fragment {
         courts.add(new Court("Cầu lông 01", 120000, "court_badminton"));
 
         rvFeaturedCourts.setLayoutManager(new LinearLayoutManager(getContext(), LinearLayoutManager.HORIZONTAL, false));
-        rvFeaturedCourts.setAdapter(new CourtAdapter(courts));
+        rvFeaturedCourts.setAdapter(new com.example.sportcenterapp.adapters.CourtAdapter(courts, requireContext()));
+
     }
 }

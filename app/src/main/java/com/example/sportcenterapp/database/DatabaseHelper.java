@@ -469,20 +469,43 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     }
 
     public void addToCart(int userId, int productId, int qty) {
-        try (SQLiteDatabase db = getWritableDatabase()) {
-            db.execSQL("UPDATE CartItems SET qty = qty + ? WHERE user_id=? AND product_id=?",
-                    new Object[]{qty, userId, productId});
-            try (Cursor c = db.rawQuery("SELECT changes()", null)) {
-                if (c.moveToFirst() && c.getInt(0) == 0) {
-                    ContentValues v = new ContentValues();
-                    v.put("user_id", userId);
-                    v.put("product_id", productId);
-                    v.put("qty", qty);
-                    db.insert("CartItems", null, v);
-                }
+        if (qty <= 0) return;
+        SQLiteDatabase db = getWritableDatabase();
+
+        // tồn hiện tại
+        int stock = 0;
+        try (Cursor c = db.rawQuery("SELECT stock FROM Products WHERE id=?",
+                new String[]{String.valueOf(productId)})) {
+            if (c.moveToFirst()) stock = c.getInt(0);
+        }
+        if (stock <= 0) return; // hết hàng
+
+        // số lượng đã có trong giỏ
+        int inCart = 0;
+        try (Cursor c = db.rawQuery(
+                "SELECT qty FROM CartItems WHERE user_id=? AND product_id=?",
+                new String[]{String.valueOf(userId), String.valueOf(productId)})) {
+            if (c.moveToFirst()) inCart = c.getInt(0);
+        }
+
+        int available = Math.max(stock - inCart, 0);
+        int toAdd = Math.min(qty, available);
+        if (toAdd <= 0) return;
+
+        // cập nhật
+        db.execSQL("UPDATE CartItems SET qty = qty + ? WHERE user_id=? AND product_id=?",
+                new Object[]{toAdd, userId, productId});
+        try (Cursor c = db.rawQuery("SELECT changes()", null)) {
+            if (c.moveToFirst() && c.getInt(0) == 0) {
+                ContentValues v = new ContentValues();
+                v.put("user_id", userId);
+                v.put("product_id", productId);
+                v.put("qty", toAdd);
+                db.insert("CartItems", null, v);
             }
         }
     }
+
 
     public int getCartCount(int userId) {
         try (SQLiteDatabase db = getReadableDatabase();
@@ -516,18 +539,27 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     }
 
     public void updateCartQty(int userId, int productId, int qty) {
-        try (SQLiteDatabase db = getWritableDatabase()) {
-            if (qty <= 0) {
-                db.delete("CartItems", "user_id=? AND product_id=?",
-                        new String[]{String.valueOf(userId), String.valueOf(productId)});
-            } else {
-                ContentValues v = new ContentValues();
-                v.put("qty", qty);
-                db.update("CartItems", v, "user_id=? AND product_id=?",
-                        new String[]{String.valueOf(userId), String.valueOf(productId)});
-            }
+        SQLiteDatabase db = getWritableDatabase();
+
+        if (qty <= 0) {
+            db.delete("CartItems", "user_id=? AND product_id=?",
+                    new String[]{String.valueOf(userId), String.valueOf(productId)});
+            return;
         }
+
+        int stock = Integer.MAX_VALUE;
+        try (Cursor c = db.rawQuery("SELECT stock FROM Products WHERE id=?",
+                new String[]{String.valueOf(productId)})) {
+            if (c.moveToFirst()) stock = c.getInt(0);
+        }
+        int newQty = Math.min(qty, stock);
+
+        ContentValues v = new ContentValues();
+        v.put("qty", newQty);
+        db.update("CartItems", v, "user_id=? AND product_id=?",
+                new String[]{String.valueOf(userId), String.valueOf(productId)});
     }
+
 
     /** Tổng tiền giỏ (double cho nhất quán với Products.price REAL) */
     public double getCartTotal(int userId) {
@@ -557,64 +589,80 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         boolean started = false;
 
         try {
-            // Bắt đầu transaction sớm để tránh endTransaction khi chưa begin
             dbw.beginTransaction();
             started = true;
 
-            // Tính tổng
+            // kiểm tra tồn & tính tổng
             double total = 0d;
+            java.util.List<int[]> lines = new java.util.ArrayList<>(); // {productId, qty}
             c = dbw.rawQuery(
-                    "SELECT IFNULL(SUM(p.price * ci.qty), 0) " +
-                            "FROM CartItems ci JOIN Products p ON ci.product_id = p.id " +
-                            "WHERE ci.user_id = ?",
-                    new String[]{String.valueOf(userId)});
-            if (c.moveToFirst()) total = c.getDouble(0);
-            c.close(); c = null;
+                    "SELECT ci.product_id, p.price, ci.qty, p.stock " +
+                            "FROM CartItems ci JOIN Products p ON ci.product_id=p.id " +
+                            "WHERE ci.user_id=?", new String[]{String.valueOf(userId)});
+            while (c.moveToNext()) {
+                int pid = c.getInt(0);
+                double price = c.getDouble(1);
+                int qty = c.getInt(2);
+                int stock = c.getInt(3);
 
-            if (total <= 0d) {
-                return -1; // rollback ở finally vì chưa setSuccessful
+                if (qty <= 0 || stock < qty) {
+                    return -2; // thiếu hàng -> UI bắt giá trị này để báo "hết hàng/không đủ số lượng"
+                }
+                total += price * qty;
+                lines.add(new int[]{pid, qty});
             }
+            c.close(); c = null;
+            if (lines.isEmpty() || total <= 0d) return -1;
 
-            String now = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault())
-                    .format(new Date());
+            String now = new java.text.SimpleDateFormat("yyyy-MM-dd HH:mm:ss",
+                    java.util.Locale.getDefault()).format(new java.util.Date());
 
-            // Insert orders
+            // tạo orders (để đồng nhất trạng thái)
             ContentValues ov = new ContentValues();
             ov.put("user_id", userId);
             ov.put("total", total);
             ov.put("created_at", now);
+            ov.put("status", "pending");
             long orderId = dbw.insertOrThrow("orders", null, ov);
 
-            // Insert order_items từ CartItems
-            c = dbw.rawQuery(
-                    "SELECT ci.product_id, p.name, p.price, ci.qty " +
-                            "FROM CartItems ci JOIN Products p ON ci.product_id = p.id " +
-                            "WHERE ci.user_id = ?",
-                    new String[]{String.valueOf(userId)});
-            while (c.moveToNext()) {
+            // tạo order_items + trừ tồn
+            for (int[] ln : lines) {
+                int pid = ln[0], qty = ln[1];
+
+                Cursor pcur = dbw.rawQuery("SELECT name, price FROM Products WHERE id=?",
+                        new String[]{String.valueOf(pid)});
+                if (!pcur.moveToFirst()) { pcur.close(); continue; }
+                String name = pcur.getString(0);
+                double price = pcur.getDouble(1);
+                pcur.close();
+
                 ContentValues iv = new ContentValues();
                 iv.put("order_id", orderId);
-                iv.put("product_id", c.getInt(0));
-                iv.put("name", c.getString(1));
-                iv.put("price", c.getDouble(2));   // REAL
-                iv.put("quantity", c.getInt(3));   // map từ qty -> quantity
+                iv.put("product_id", pid);
+                iv.put("name", name);
+                iv.put("price", price);
+                iv.put("quantity", qty);
                 dbw.insertOrThrow("order_items", null, iv);
+
+                dbw.execSQL("UPDATE Products SET stock = stock - ? WHERE id=?",
+                        new Object[]{qty, pid});
             }
 
-            // Xoá giỏ của user
+            // xoá giỏ
             dbw.delete("CartItems", "user_id=?", new String[]{String.valueOf(userId)});
 
             dbw.setTransactionSuccessful();
             return orderId;
 
         } catch (Exception e) {
-            Log.e("DB", "checkout error", e);
+            android.util.Log.e("DB", "checkout error", e);
             return -1;
         } finally {
             if (c != null) c.close();
             if (started && dbw.inTransaction()) dbw.endTransaction();
         }
     }
+
 
     public List<Order> getOrders(int userId) {
         List<Order> out = new ArrayList<>();
