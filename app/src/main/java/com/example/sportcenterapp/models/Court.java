@@ -18,18 +18,31 @@ public class Court {
         this.image = image;
     }
 
+    public int getId() { return id; }
+    public void setId(int id) { this.id = id; }
 
-    public String getName() {
-        return name;
-    }
+    public String getName() { return name; }
+    public void setName(String name) { this.name = name; }
 
-    public double getPrice() {
-        return price;
-    }
+    public String getSport() { return sport; }
+    public void setSport(String sport) { this.sport = sport; }
 
-    public String getImage() {
-        return image;
-    }
+    public String getSurface() { return surface; }
+    public void setSurface(String surface) { this.surface = surface; }
+
+    public int Indoor() { return indoor; }
+    public void setIndoor(int indoor) { this.indoor = indoor; }
+
+    public double getPrice() { return price; }
+    public void setPrice(double price) { this.price = price; }
+
+    public String getImage() { return image; }
+    public void setImage(String image) { this.image = image; }
+
+    // ---- Bridge cho code cũ (nếu đâu đó còn dùng) ----
+    public String getType() { return sport; }  // legacy
+    public boolean isIndoor() { return indoor == 1; }
+
 
     @Override public String toString() { return name; } // để Spinner hiển thị tên
 }

@@ -23,6 +23,10 @@
             android:inputType="textEmailAddress" android:layout_marginTop="8dp"
             android:layout_width="match_parent" android:layout_height="wrap_content"/>
 
+        <EditText android:id="@+id/etAddress" android:hint="Địa chỉ"
+            android:layout_marginTop="8dp"
+            android:layout_width="match_parent" android:layout_height="wrap_content"/>
+
         <Switch android:id="@+id/swVip" android:text="VIP"
             android:layout_marginTop="8dp"
             android:layout_width="wrap_content" android:layout_height="wrap_content"/>

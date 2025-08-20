@@ -1,29 +1,26 @@
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="match_parent" android:layout_height="wrap_content">
-    <LinearLayout
-        android:orientation="vertical" android:padding="16dp"
+    android:layout_width="match_parent" android:layout_height="wrap_content"
+    android:padding="16dp">
+
+    <LinearLayout android:orientation="vertical"
         android:layout_width="match_parent" android:layout_height="wrap_content">
 
-        <EditText android:id="@+id/etName" android:hint="Tên sân"
-            android:layout_width="match_parent" android:layout_height="wrap_content"/>
-        <EditText android:id="@+id/etSport" android:hint="Bộ môn (VD: Tennis/Badminton)"
-            android:layout_marginTop="8dp"
-            android:layout_width="match_parent" android:layout_height="wrap_content"/>
-        <EditText android:id="@+id/etSurface" android:hint="Mặt sân (VD: Grass/Clay/Wood)"
-            android:layout_marginTop="8dp"
+        <EditText android:id="@+id/etName"    android:hint="Tên sân"      android:inputType="textCapWords"
             android:layout_width="match_parent" android:layout_height="wrap_content"/>
 
-        <CheckBox android:id="@+id/cbIndoor" android:text="Trong nhà"
-            android:layout_marginTop="8dp"
+        <EditText android:id="@+id/etSport"   android:hint="Môn (football/badminton/tennis)"
+            android:layout_width="match_parent" android:layout_height="wrap_content"/>
+
+        <EditText android:id="@+id/etSurface" android:hint="Mặt sân (grass/turf/hard/wooden)"
+            android:layout_width="match_parent" android:layout_height="wrap_content"/>
+
+        <CheckBox android:id="@+id/cbIndoor"  android:text="Sân trong nhà"
             android:layout_width="wrap_content" android:layout_height="wrap_content"/>
 
-        <EditText android:id="@+id/etPrice" android:hint="Giá/giờ"
-            android:inputType="numberDecimal"
-            android:layout_marginTop="8dp"
-            android:layout_width="match_parent" android:layout_height="wrap_content"/>
+        <EditText android:id="@+id/etPrice"   android:hint="Giá / giờ"
+            android:inputType="numberDecimal" android:layout_width="match_parent" android:layout_height="wrap_content"/>
 
-        <EditText android:id="@+id/etImage" android:hint="Ảnh (tên drawable hoặc url)"
-            android:layout_marginTop="8dp"
+        <EditText android:id="@+id/etImage"   android:hint="Ảnh (URL/tên file)"
             android:layout_width="match_parent" android:layout_height="wrap_content"/>
     </LinearLayout>
 </ScrollView>

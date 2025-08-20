@@ -20,4 +20,23 @@ public class Product {
     public String toString() {
         return name;
     }
+
+    public String getName() {
+        return name;
+    }
+
+    public double getPrice() {
+        return price;
+    }
+    public int getStock(){
+        return stock;
+    }
+
+    public String getImage() {
+        return image;
+    }
+
+    public int getId() {
+        return id;
+    }
 }

@@ -28,7 +28,7 @@ public class AccountFragment extends Fragment {
 
     private ImageView ivAvatar;
     private TextView tvUsername, tvVip, tvCreatedAt;
-    private EditText etFullName, etPhone, etEmail;
+    private EditText etFullName, etPhone, etEmail,etAddress;
     private View groupDetails;
     private Button btnViewDetails, btnEdit, btnSave, btnCancel,
             btnChangePass, btnBookingHistory, btnOrderHistory, btnChat, btnLogout;
@@ -52,6 +52,7 @@ public class AccountFragment extends Fragment {
         etFullName  = v.findViewById(R.id.etFullName);
         etPhone     = v.findViewById(R.id.etPhone);
         etEmail     = v.findViewById(R.id.etEmail);
+        etAddress =v.findViewById(R.id.etAddress);
 
         btnViewDetails   = v.findViewById(R.id.btnViewDetails);
         btnEdit          = v.findViewById(R.id.btnEdit);
@@ -94,6 +95,7 @@ public class AccountFragment extends Fragment {
         etFullName.setText(safe(user.fullName));
         etPhone.setText(safe(user.phone));
         etEmail.setText(safe(user.email));
+        etAddress.setText(safe(user.address));
         tvCreatedAt.setText(safe(user.createdAt));
 
         setEditable(false);
@@ -114,6 +116,7 @@ public class AccountFragment extends Fragment {
             etFullName.setText(safe(user.fullName));
             etPhone.setText(safe(user.phone));
             etEmail.setText(safe(user.email));
+            etAddress.setText(safe(user.address));
             setEditable(false);
         });
 
@@ -121,13 +124,14 @@ public class AccountFragment extends Fragment {
             String full = etFullName.getText().toString().trim();
             String phone= etPhone.getText().toString().trim();
             String email= etEmail.getText().toString().trim();
+            String address = etAddress.getText().toString().trim();
 
             try (DatabaseHelper db = new DatabaseHelper(requireContext())) {
-                db.updateUserProfile(user.id, full, phone, email, null);
+                db.updateUserProfile(user.id, full, phone, email, address,null);
             }
             Snackbar.make(requireView(), "Đã lưu thay đổi", Snackbar.LENGTH_SHORT).show();
             // cập nhật lại header + state
-            user.fullName = full; user.phone = phone; user.email = email;
+            user.fullName = full; user.phone = phone; user.email = email;user.address= address;
             tvUsername.setText(user.username + " • " + safe(user.fullName));
             setEditable(false);
         });
@@ -153,6 +157,7 @@ public class AccountFragment extends Fragment {
         etFullName.setEnabled(editable);
         etPhone.setEnabled(editable);
         etEmail.setEnabled(editable);
+        etAddress.setEnabled(editable);
 
         btnEdit.setVisibility(editable ? View.GONE : View.VISIBLE);
         btnSave.setVisibility(editable ? View.VISIBLE : View.GONE);

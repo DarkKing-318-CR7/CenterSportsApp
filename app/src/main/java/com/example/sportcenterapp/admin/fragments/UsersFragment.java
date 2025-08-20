@@ -61,6 +61,7 @@ public class UsersFragment extends Fragment {
         EditText etFull     = content.findViewById(R.id.etFullname);
         EditText etPhone    = content.findViewById(R.id.etPhone);
         EditText etEmail    = content.findViewById(R.id.etEmail);
+        EditText etAddress  =content.findViewById(R.id.etAddress);
         Switch   swVip      = content.findViewById(R.id.swVip);
         Spinner  spRole     = content.findViewById(R.id.spRole);
 
@@ -74,6 +75,7 @@ public class UsersFragment extends Fragment {
             etFull.setText(edit.fullName);
             etPhone.setText(edit.phone);
             etEmail.setText(edit.email);
+            etAddress.setText(edit.address);
             swVip.setChecked(edit.vip);
             spRole.setSelection("admin".equalsIgnoreCase(edit.role)?1:0);
         }
@@ -87,6 +89,7 @@ public class UsersFragment extends Fragment {
                     String f = etFull.getText().toString().trim();
                     String ph= etPhone.getText().toString().trim();
                     String em= etEmail.getText().toString().trim();
+                    String adr =etAddress.getText().toString().trim();
                     String role = (String) spRole.getSelectedItem();
                     boolean vip = swVip.isChecked();
 
@@ -95,7 +98,7 @@ public class UsersFragment extends Fragment {
                         return;
                     }
                     if (isEdit) {
-                        db.updateUserProfile(edit.id, f, ph, em, null);
+                        db.updateUserProfile(edit.id, f, ph, em,adr, null);
                         db.setVip(edit.id, vip);
                         db.setRole(edit.id, role);
                         if (!p.isEmpty()) db.changePassword(edit.id, edit.username.equals(u)?p:p, p); // đổi pass nếu nhập

@@ -47,6 +47,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 "email TEXT," +
                 "vip INTEGER NOT NULL DEFAULT 0 CHECK (vip IN (0,1))," +
                 "avatar TEXT," +
+                "address TEXT,"+
                 "role TEXT NOT NULL DEFAULT 'player' CHECK (role IN ('player','admin'))," +
                 "created_at TEXT NOT NULL DEFAULT (datetime('now','localtime'))" +
                 ")"
@@ -265,12 +266,15 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
     // ===== Users API =====
     // DatabaseHelper.java
-    public @Nullable com.example.sportcenterapp.models.User login(String username, String password) {
-        String sql = "SELECT id, username, full_name, phone, email, vip, avatar, role, created_at " +
-                "FROM Users WHERE username=? AND password=? LIMIT 1";
+    @Nullable
+    public com.example.sportcenterapp.models.User login(String username, String password) {
+        String sql =
+                "SELECT id, username, full_name, phone, email, vip, avatar, role, created_at, address " + // <-- có dấu phẩy và SPACE
+                        "FROM Users WHERE username=? AND password=? LIMIT 1";
 
         try (SQLiteDatabase db = getReadableDatabase();
              Cursor c = db.rawQuery(sql, new String[]{username, password})) {
+
             if (c.moveToFirst()) {
                 com.example.sportcenterapp.models.User u = new com.example.sportcenterapp.models.User();
                 u.id        = c.getInt(0);
@@ -282,39 +286,42 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 u.avatar    = c.getString(6);
                 u.role      = c.getString(7);
                 u.createdAt = c.getString(8);
+                u.address   = c.getString(9);
                 return u;
             }
         }
         return null;
     }
-
-
     public User getUserById(int userId) {
         User u = null;
-        String sql = "SELECT id, username, full_name, phone, email, vip, avatar, created_at, role " +
-                "FROM Users WHERE id=?";
+        String sql =
+                "SELECT id, username, full_name, phone, email, vip, avatar, created_at, role, address " +
+                        "FROM Users WHERE id=?";
         try (Cursor c = getReadableDatabase().rawQuery(sql, new String[]{String.valueOf(userId)})) {
             if (c.moveToFirst()) {
                 u = new User();
-                u.id = c.getInt(0);
-                u.username = c.getString(1);
-                u.fullName = c.getString(2);
-                u.phone = c.getString(3);
-                u.email = c.getString(4);
-                u.vip = c.getInt(5) == 1;
-                u.avatar = c.getString(6);
+                u.id        = c.getInt(0);
+                u.username  = c.getString(1);
+                u.fullName  = c.getString(2);
+                u.phone     = c.getString(3);
+                u.email     = c.getString(4);
+                u.vip       = (c.getInt(5) == 1);
+                u.avatar    = c.getString(6);
                 u.createdAt = c.getString(7);
-                u.role = c.getString(8);
+                u.role      = c.getString(8);
+                u.address   = c.getString(9);
             }
         }
         return u;
     }
-
-    public boolean updateUserProfile(int userId, String fullName, String phone, String email, @Nullable String avatar) {
+    // 4) updateUserProfile: đã đúng – chỉ nhắc lại cho đủ ngữ cảnh
+    public boolean updateUserProfile(int userId, String fullName, String phone, String email,
+                                     String address, @Nullable String avatar) {
         ContentValues v = new ContentValues();
         v.put("full_name", fullName);
-        v.put("phone", phone);
-        v.put("email", email);
+        v.put("phone",     phone);
+        v.put("email",     email);
+        v.put("address",   address);
         if (avatar != null) v.put("avatar", avatar);
         return getWritableDatabase().update("Users", v, "id=?", new String[]{String.valueOf(userId)}) > 0;
     }
