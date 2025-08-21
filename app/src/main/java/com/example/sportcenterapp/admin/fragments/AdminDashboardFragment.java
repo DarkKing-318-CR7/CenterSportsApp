@@ -16,8 +16,6 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.sportcenterapp.R;
 import com.example.sportcenterapp.database.DatabaseHelper;
-import com.google.android.material.button.MaterialButtonToggleGroup;
-import com.google.android.material.chip.Chip;
 import com.google.android.material.chip.ChipGroup;
 
 import java.text.NumberFormat;
@@ -25,22 +23,11 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
-/** Tổng quan: 2 nút “Đơn hàng / Đặt sân”; có filter mini & group theo ngày */
 public class AdminDashboardFragment extends Fragment {
-
-    private static final int MODE_ORDERS   = 0;
-    private static final int MODE_BOOKINGS = 1;
-
-    private int mode = MODE_ORDERS;
-
-    // CHỈ DÙNG 4 TRẠNG THÁI: ALL | PENDING | APPROVED | CANCELLED
-    private String ordersUiStatus   = "ALL";
-    private String bookingsUiStatus = "ALL";
 
     private DatabaseHelper db;
     private RecyclerView rv;
-    private ChipGroup chipOrderFilters, chipBookingFilters;
-
+    private ChipGroup chipFilters;
     private final List<Row> data = new ArrayList<>();
     private Adapter adapter;
 
@@ -49,107 +36,95 @@ public class AdminDashboardFragment extends Fragment {
         return inflater.inflate(R.layout.fragment_admin_dashboard, container, false);
     }
 
-    @Override
-    public void onViewCreated(@NonNull View v, @Nullable Bundle savedInstanceState) {
+    @Override public void onViewCreated(@NonNull View v, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(v, savedInstanceState);
         db = new DatabaseHelper(requireContext());
-
-        rv = v.findViewById(R.id.rvList);   // <-- CHÍNH XÁC LÀ rvList
+        rv = v.findViewById(R.id.rvList);
         rv.setLayoutManager(new LinearLayoutManager(getContext()));
         adapter = new Adapter(data);
         rv.setAdapter(adapter);
 
-
-        chipOrderFilters   = v.findViewById(R.id.chipOrderFilters);
-        chipBookingFilters = v.findViewById(R.id.chipBookingFilters);
-
-        // Toggle “Đơn hàng / Đặt sân”
-        MaterialButtonToggleGroup tg = v.findViewById(R.id.toggleGroup);
-        tg.addOnButtonCheckedListener((group, checkedId, isChecked) -> {
-            if (!isChecked) return;
-            if (checkedId == R.id.btnToggleOrders) {
-                mode = MODE_ORDERS;
-                chipOrderFilters.setVisibility(View.VISIBLE);
-                chipBookingFilters.setVisibility(View.GONE);
-            } else if (checkedId == R.id.btnToggleBookings) {
-                mode = MODE_BOOKINGS;
-                chipOrderFilters.setVisibility(View.GONE);
-                chipBookingFilters.setVisibility(View.VISIBLE);
+        chipFilters = v.findViewById(R.id.chipFilters);
+        chipFilters.setOnCheckedStateChangeListener((group, ids) -> {
+            String tag = "ALL";
+            if (!ids.isEmpty()) {
+                View chip = group.findViewById(ids.get(0));
+                if (chip != null && chip.getTag() != null) tag = chip.getTag().toString();
             }
-            load();
+            loadByTag(tag);
         });
-        tg.check(R.id.btnToggleOrders);
 
-        // Mini filter: Đơn hàng
-        chipOrderFilters.setOnCheckedStateChangeListener((group, ids) -> {
-            if (!ids.isEmpty()) {
-                Chip c = group.findViewById(ids.get(0));
-                ordersUiStatus = (c != null && c.getTag()!=null) ? c.getTag().toString() : "ALL";
-            } else ordersUiStatus = "ALL";
-            if (mode == MODE_ORDERS) load();
-        });
-        // chọn mặc định
-        Chip chipDashAll = v.findViewById(R.id.chipDashAll);
-        if (chipDashAll != null) chipDashAll.setChecked(true);
-
-        // Mini filter: Đặt sân
-        chipBookingFilters.setOnCheckedStateChangeListener((group, ids) -> {
-            if (!ids.isEmpty()) {
-                Chip c = group.findViewById(ids.get(0));
-                bookingsUiStatus = (c != null && c.getTag()!=null) ? c.getTag().toString() : "ALL";
-            } else bookingsUiStatus = "ALL";
-            if (mode == MODE_BOOKINGS) load();
-        });
-        Chip chipBkAll = v.findViewById(R.id.chipBkAll);
-        if (chipBkAll != null) chipBkAll.setChecked(true);
-
-        load();
+        // Mặc định chọn "Tất cả"
+        loadByTag("ALL");
     }
 
-    private void load() {
+    private void loadByTag(String tag) {
         data.clear();
-        if (mode == MODE_ORDERS) data.addAll(queryOrders(ordersUiStatus));
-        else                     data.addAll(queryBookings(bookingsUiStatus));
+        switch (tag) {
+            case "ALL": {
+                data.add(Row.header("ĐƠN HÀNG"));
+                data.addAll(queryOrders(null));        // ALL
+                data.add(Row.header("ĐẶT SÂN"));
+                data.addAll(queryBookings(null));      // ALL
+                break;
+            }
+            case "PENDING_ALL": {
+                data.add(Row.header("CHƯA DUYỆT • ĐƠN HÀNG"));
+                data.addAll(queryOrders("pending"));
+                data.add(Row.header("CHƯA DUYỆT • ĐẶT SÂN"));
+                data.addAll(queryBookings("PENDING"));
+                break;
+            }
+            case "APPROVED_ALL": {
+                data.add(Row.header("ĐÃ DUYỆT • ĐƠN HÀNG"));
+                data.addAll(queryOrders("approved_or_paid"));
+                data.add(Row.header("ĐÃ DUYỆT • ĐẶT SÂN"));
+                data.addAll(queryBookings("APPROVED"));
+                break;
+            }
+            case "ORDERS_ONLY": {
+                data.add(Row.header("ĐƠN HÀNG"));
+                data.addAll(queryOrders(null));
+                break;
+            }
+            case "BOOKINGS_ONLY": {
+                data.add(Row.header("ĐẶT SÂN"));
+                data.addAll(queryBookings(null));
+                break;
+            }
+        }
         adapter.notifyDataSetChanged();
     }
 
-    /* ====================== ORDERS ====================== */
+    /* ================== ORDERS ================== */
 
     private boolean colExists(SQLiteDatabase r, String table, String col) {
         try (Cursor c = r.rawQuery("PRAGMA table_info(" + table + ")", null)) {
             while (c.moveToNext()) {
-                if (col.equalsIgnoreCase(c.getString(c.getColumnIndexOrThrow("name")))) return true;
+                String name = c.getString(c.getColumnIndexOrThrow("name"));
+                if (col.equalsIgnoreCase(name)) return true;
             }
         }
         return false;
     }
 
-    /** where cho đơn hàng với 4 trạng thái chuẩn hoá */
-    private String makeOrdersWhere(boolean hasStatus, String uiTag) {
-        if (!hasStatus || uiTag == null || "ALL".equals(uiTag)) return "";
-        switch (uiTag) {
-            case "PENDING":
-                return "WHERE o.status='pending' ";
-            case "APPROVED":
-                // tương thích dữ liệu cũ: 'paid'/'fulfilled'
-                return "WHERE o.status IN ('approved','paid','fulfilled') ";
-            case "CANCELLED":
-                return "WHERE o.status='canceled' ";
-            default:
-                return "";
-        }
-    }
-
-    private List<Row> queryOrders(String uiTag) {
+    /** statusKey: null=ALL, "pending"=chờ duyệt, "approved_or_paid"=đã duyệt (gom approved/paid/fulfilled) */
+    private List<Row> queryOrders(@Nullable String statusKey) {
         ArrayList<Row> list = new ArrayList<>();
         SQLiteDatabase r = db.getReadableDatabase();
         boolean hasStatus  = colExists(r, "orders", "status");
         boolean hasCreated = colExists(r, "orders", "created_at");
 
         String dExpr = hasCreated ? "strftime('%Y-%m-%d', o.created_at)" : "date('now')";
-        String where = makeOrdersWhere(hasStatus, uiTag);
+        String where = "";
+        if (hasStatus) {
+            if ("pending".equals(statusKey)) {
+                where = "WHERE o.status='pending' ";
+            } else if ("approved_or_paid".equals(statusKey)) {
+                where = "WHERE o.status IN ('approved','paid','fulfilled') ";
+            }
+        }
 
-        // 0:id,1:customer,2:total,3:status,4:day
         String sql = "SELECT o.id, IFNULL(u.full_name,u.username), o.total" +
                 (hasStatus ? ", o.status" : ", NULL AS status") +
                 ", " + dExpr + " AS d " +
@@ -178,40 +153,29 @@ public class AdminDashboardFragment extends Fragment {
     private String mapOrderStatus(String s) {
         if (s == null) return "PENDING";
         switch (s.toLowerCase(Locale.ROOT)) {
-            case "pending":    return "PENDING";
-            case "approved":   return "APPROVED";
+            case "pending":   return "PENDING";
+            case "approved":
             case "paid":
-            case "fulfilled":  return "APPROVED";   // gom về ĐÃ DUYỆT
-            case "canceled":   return "CANCELLED";
+            case "fulfilled": return "APPROVED";
+            case "canceled":  return "CANCELLED";
         }
         return "PENDING";
     }
 
-    /* ===================== BOOKINGS ===================== */
+    /* ================== BOOKINGS ================== */
 
-    /** where cho đặt sân với 4 trạng thái chuẩn hoá */
-    private String makeBookingsWhere(String uiTag) {
-        if (uiTag == null || "ALL".equals(uiTag)) return "";
-        switch (uiTag) {
-            case "PENDING":
-                return "WHERE b.status='PENDING' ";
-            case "APPROVED":
-                // CONFIRMED/DONE/COMPLETED xem như đã duyệt
-                return "WHERE b.status IN ('CONFIRMED','DONE','COMPLETED') ";
-            case "CANCELLED":
-                return "WHERE b.status='CANCELLED' ";
-            default:
-                return "";
-        }
-    }
-
-    private List<Row> queryBookings(String uiTag) {
+    /** statusKey: null=ALL, "PENDING", "APPROVED"(=CONFIRMED/DONE/COMPLETED) */
+    private List<Row> queryBookings(@Nullable String statusKey) {
         ArrayList<Row> list = new ArrayList<>();
         SQLiteDatabase r = db.getReadableDatabase();
 
-        String where = makeBookingsWhere(uiTag);
+        String where = "";
+        if ("PENDING".equals(statusKey)) {
+            where = "WHERE b.status='PENDING' ";
+        } else if ("APPROVED".equals(statusKey)) {
+            where = "WHERE b.status IN ('CONFIRMED','DONE','COMPLETED') ";
+        }
 
-        // 0:id,1:customer,2:total,3:status,4:court,5:date,6:start,7:end
         String sql = "SELECT b.id, IFNULL(u.full_name,u.username), " +
                 "IFNULL(b.total_price,0), b.status, c.name, b.date, b.start_time, b.end_time " +
                 "FROM Bookings b JOIN Users u ON u.id=b.user_id " +
@@ -222,7 +186,7 @@ public class AdminDashboardFragment extends Fragment {
         try (Cursor c = r.rawQuery(sql, null)) {
             String lastDay = null;
             while (c.moveToNext()) {
-                String day = c.getString(5); // yyyy-MM-dd
+                String day = c.getString(5);
                 if (lastDay == null || !lastDay.equals(day)) {
                     list.add(Row.header(day));
                     lastDay = day;
@@ -236,7 +200,9 @@ public class AdminDashboardFragment extends Fragment {
                 String end   = c.getString(7);
 
                 String extra = (court != null ? ("Sân: " + court + " • ") : "") +
-                        start + "–" + end + " • Dự kiến: " + fmt(total);
+                        (start != null ? start : "") +
+                        (end != null ? "–" + end : "") +
+                        " • Dự kiến: " + fmt(total);
                 list.add(Row.booking("#BK-" + id, name, total, uiSt, extra));
             }
         }
@@ -249,24 +215,22 @@ public class AdminDashboardFragment extends Fragment {
             case "PENDING":    return "PENDING";
             case "CONFIRMED":
             case "DONE":
-            case "COMPLETED":  return "APPROVED";   // gom về ĐÃ DUYỆT
+            case "COMPLETED":  return "APPROVED";
             case "CANCELLED":  return "CANCELLED";
         }
         return "PENDING";
     }
 
-    /* ===== Helpers ===== */
+    /* ============ Utils & Adapter ============ */
+
     private static String fmt(double v) {
         return NumberFormat.getNumberInstance(new Locale("vi","VN"))
                 .format(Math.round(v)) + " đ";
     }
 
-    /* =================== Adapter section =================== */
-
     private static class Adapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
         private static final int TYPE_HEADER = 0;
         private static final int TYPE_ITEM   = 1;
-
         private final List<Row> data;
         Adapter(List<Row> d) { this.data = d; }
 
@@ -274,12 +238,15 @@ public class AdminDashboardFragment extends Fragment {
             return data.get(position).isHeader ? TYPE_HEADER : TYPE_ITEM;
         }
 
-        @NonNull @Override public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup p, int vt) {
+        @NonNull @Override
+        public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup p, int vt) {
             if (vt == TYPE_HEADER) {
-                View v = LayoutInflater.from(p.getContext()).inflate(R.layout.item_section_header, p, false);
+                View v = LayoutInflater.from(p.getContext())
+                        .inflate(R.layout.item_section_header, p, false);
                 return new HeaderVH(v);
             } else {
-                View v = LayoutInflater.from(p.getContext()).inflate(R.layout.item_admin_row, p, false);
+                View v = LayoutInflater.from(p.getContext())
+                        .inflate(R.layout.item_admin_row, p, false);
                 return new ItemVH(v);
             }
         }
@@ -287,12 +254,12 @@ public class AdminDashboardFragment extends Fragment {
         @Override public void onBindViewHolder(@NonNull RecyclerView.ViewHolder h, int pos) {
             Row r = data.get(pos);
             if (h instanceof HeaderVH) {
-                ((HeaderVH) h).title.setText("Ngày " + r.headerDay);
+                ((HeaderVH) h).title.setText(r.headerText);
             } else {
                 ItemVH ivh = (ItemVH) h;
                 ivh.title.setText(r.code + " • " + r.customer);
                 ivh.subtitle.setText(r.extra != null ? r.extra : ("Tổng: " + fmt(r.total)));
-                ivh.status.setText(viLabel(r.status));
+                ivh.status.setText(labelVi(r.status));
                 ivh.status.setBackgroundResource(bgFor(r.status));
             }
         }
@@ -305,14 +272,15 @@ public class AdminDashboardFragment extends Fragment {
         }
         static class ItemVH extends RecyclerView.ViewHolder {
             TextView title, subtitle, status;
-            ItemVH(@NonNull View v) { super(v);
+            ItemVH(@NonNull View v) {
+                super(v);
                 title = v.findViewById(R.id.tvTitle);
                 subtitle = v.findViewById(R.id.tvSubtitle);
                 status = v.findViewById(R.id.tvStatus);
             }
         }
 
-        private static String viLabel(String ui){
+        private static String labelVi(String ui){
             if (ui == null) return "Chờ duyệt";
             switch (ui){
                 case "PENDING":   return "Chờ duyệt";
@@ -321,32 +289,30 @@ public class AdminDashboardFragment extends Fragment {
                 default:          return "Chờ duyệt";
             }
         }
-
         private static int bgFor(String ui){
             if (ui==null) return R.drawable.bg_status_pending;
             switch (ui){
                 case "PENDING":   return R.drawable.bg_status_pending;
-                case "APPROVED":  return R.drawable.bg_status_done;    // dùng nền xanh lá
+                case "APPROVED":  return R.drawable.bg_status_done;
                 case "CANCELLED": return R.drawable.bg_status_cancel;
                 default:          return R.drawable.bg_status_pending;
             }
         }
     }
 
-    /* ================ Model cho Adapter ================ */
     private static class Row {
         final boolean isHeader;
-        final String headerDay;    // khi isHeader = true
-        final String code, customer, status, extra;
+        final String headerText; // với header
+        final String code, customer, status, extra; // với item
         final double total;
 
-        private Row(boolean isHeader, String headerDay, String code, String customer,
+        private Row(boolean isHeader, String headerText, String code, String customer,
                     double total, String status, String extra) {
-            this.isHeader = isHeader; this.headerDay = headerDay;
+            this.isHeader = isHeader; this.headerText = headerText;
             this.code = code; this.customer = customer; this.total = total;
             this.status = status; this.extra = extra;
         }
-        static Row header(String day) { return new Row(true, day, null, null, 0, null, null); }
+        static Row header(String text) { return new Row(true, text, null, null, 0, null, null); }
         static Row order(String code, String name, double total, String status) {
             return new Row(false, null, code, name, total, status, null);
         }

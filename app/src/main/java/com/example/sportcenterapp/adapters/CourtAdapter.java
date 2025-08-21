@@ -75,16 +75,17 @@ public class CourtAdapter extends RecyclerView.Adapter<CourtAdapter.VH> {
         }
 
         // ---- Ảnh (nếu layout player có ImageView) ----
-        if (h.imgCourt != null) {
-            Context ctx = h.itemView.getContext();
-            String imgName = c.getImage();
-            int resId = 0;
-            if (imgName != null && !imgName.trim().isEmpty()) {
-                resId = ctx.getResources().getIdentifier(imgName.trim(), "drawable", ctx.getPackageName());
-            }
-            if (resId == 0) resId = R.drawable.placeholder_court;
-            h.imgCourt.setImageResource(resId);
+        int resId = 0;
+        String img = c.getImage();
+        if (img != null && !img.trim().isEmpty()) {
+            resId = h.itemView.getContext().getResources()
+                    .getIdentifier(img.trim(), "drawable",
+                            h.itemView.getContext().getPackageName());
         }
+        if (resId == 0) resId = R.drawable.placeholder_court;
+
+        if (h.ivImage != null) h.ivImage.setImageResource(resId);
+
 
         // ---- Click: Admin = Edit ; Player = Click ----
         if (h.clickTarget != null) {
@@ -111,7 +112,7 @@ public class CourtAdapter extends RecyclerView.Adapter<CourtAdapter.VH> {
     static class VH extends RecyclerView.ViewHolder {
         // Player
         View  clickTarget;           // card root nếu tìm được
-        ImageView imgCourt;
+        ImageView ivImage;
         TextView tvCourtName, tvCourtPrice;
 
         // Admin
@@ -126,7 +127,7 @@ public class CourtAdapter extends RecyclerView.Adapter<CourtAdapter.VH> {
             this.listener = listener;
 
             // Player ids (item_court.xml)
-            imgCourt     = v.findViewById(R.id.imgCourt);
+            ivImage     = v.findViewById(R.id.ivImage);
             tvCourtName  = v.findViewById(R.id.tvCourtName);
             tvCourtPrice = v.findViewById(R.id.tvCourtPrice);
 
