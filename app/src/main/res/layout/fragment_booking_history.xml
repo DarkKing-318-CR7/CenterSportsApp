@@ -2,35 +2,28 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:orientation="vertical" android:padding="16dp"
     android:layout_width="match_parent" android:layout_height="match_parent">
+
     <TextView
-        android:text="Lịch sử đặt sân" android:textStyle="bold" android:textSize="18sp"
+        android:text="Lịch sử đặt sân"
+        android:textStyle="bold" android:textSize="18sp"
         android:layout_width="wrap_content" android:layout_height="wrap_content"/>
 
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:orientation="vertical"
-        android:padding="12dp">
+    <ProgressBar
+        android:id="@+id/progressHistory"
+        android:layout_width="wrap_content" android:layout_height="wrap_content"
+        android:layout_gravity="center" android:visibility="gone"
+        android:layout_marginTop="8dp"/>
 
-        <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/rvBookings"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:clipToPadding="false"
-            android:paddingBottom="88dp" />
-
-        <TextView
-            android:id="@+id/emptyView"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:gravity="center"
-            android:paddingTop="24dp"
-            android:text="Bạn chưa có lịch sử đặt sân."
-            android:visibility="gone" />
-    </LinearLayout>
+    <TextView
+        android:id="@+id/emptyView"
+        android:layout_width="match_parent" android:layout_height="wrap_content"
+        android:gravity="center" android:paddingTop="24dp"
+        android:text="Bạn chưa có lịch sử đặt sân."
+        android:visibility="gone"/>
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/rvBookingHistory"
-        android:layout_width="match_parent" android:layout_height="match_parent"
-        android:paddingTop="8dp"/>
+        android:layout_width="match_parent" android:layout_height="0dp"
+        android:layout_weight="1"
+        android:clipToPadding="false" android:paddingTop="8dp" />
 </LinearLayout>
