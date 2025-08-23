@@ -28,6 +28,7 @@ import java.util.Locale;
 public class DatabaseHelper extends SQLiteOpenHelper {
 
     private static final String DB_NAME = "centerbooking.db";
+    private static final String TBL_COACHES = "Coaches";
     // Tăng version để áp dụng schema mới (orders/order_items)
     private static final int DB_VERSION = 5;
 
@@ -47,13 +48,11 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 "email TEXT," +
                 "vip INTEGER NOT NULL DEFAULT 0 CHECK (vip IN (0,1))," +
                 "avatar TEXT," +
-                "address TEXT,"+
+                "address TEXT," +
                 "role TEXT NOT NULL DEFAULT 'player' CHECK (role IN ('player','admin'))," +
                 "created_at TEXT NOT NULL DEFAULT (datetime('now','localtime'))" +
                 ")"
         );
-
-
 
 
         // Seed demo users
@@ -100,7 +99,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 "name TEXT," +
                 "price REAL," +       // dùng REAL để nhất quán
                 "image TEXT," +
-                "stock INTEGER"+
+                "stock INTEGER" +
                 ")");
 
         // Seed products
@@ -160,7 +159,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         // chỉ insert nếu rỗng
         Cursor c = db.rawQuery("SELECT COUNT(*) FROM Coaches", null);
         if (c.moveToFirst() && c.getInt(0) == 0) {
-            db.execSQL("INSERT INTO Coaches(name,sport,level,rate_per_hour,avatar,bio,phone,email,zalo) VALUES" +
+            db.execSQL("INSERT INTO Coach(name,sport,level,rate_per_hour,avatar,bio,phone,email,zalo) VALUES" +
                     "('Nguyễn Minh','Tennis','Pro',350000,'coach_tennis_1','10 năm kinh nghiệm','0901002003','minh.tennis@example.com','0901002003')," +
                     "('Trần Hòa','Badminton','Intermediate',250000,'coach_badminton_1','HLV cộng đồng','0905006007','hoa.badminton@example.com','0905006007')," +
                     "('Zinédine Zidane','Football','Pro',5000000,'coach_football_1','Chuyên kỹ thuật tiền đạo','0912345678','vy.football@example.com','0912345678')");
@@ -182,18 +181,29 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 "name TEXT, price REAL, stock INTEGER, image TEXT)");
 
 
-
     }
 
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldV, int newV) {
-        try { db.execSQL("ALTER TABLE Users ADD COLUMN created_at TEXT"); } catch (Exception ignored) {}
-        try { db.execSQL("UPDATE Users SET created_at = datetime('now','localtime') " +
-                "WHERE created_at IS NULL OR created_at=''"); } catch (Exception ignored) {}
+        try {
+            db.execSQL("ALTER TABLE Users ADD COLUMN created_at TEXT");
+        } catch (Exception ignored) {
+        }
+        try {
+            db.execSQL("UPDATE Users SET created_at = datetime('now','localtime') " +
+                    "WHERE created_at IS NULL OR created_at=''");
+        } catch (Exception ignored) {
+        }
 
         // thêm role nếu thiếu
-        try { db.execSQL("ALTER TABLE Users ADD COLUMN role TEXT"); } catch (Exception ignored) {}
-        try { db.execSQL("UPDATE Users SET role='player' WHERE role IS NULL OR role=''"); } catch (Exception ignored) {}
+        try {
+            db.execSQL("ALTER TABLE Users ADD COLUMN role TEXT");
+        } catch (Exception ignored) {
+        }
+        try {
+            db.execSQL("UPDATE Users SET role='player' WHERE role IS NULL OR role=''");
+        } catch (Exception ignored) {
+        }
 
         // Đảm bảo bảng mới tồn tại (không drop dữ liệu cũ trừ khi bạn muốn)
         if (oldV < 4) {
@@ -213,20 +223,44 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                     ")");
             db.execSQL("ALTER TABLE Bookings ADD COLUMN created_at TEXT DEFAULT (datetime('now','localtime'))");
         }
-        try { db.execSQL("ALTER TABLE orders ADD COLUMN status TEXT NOT NULL DEFAULT 'pending'"); } catch (Exception ignored) {}
-        try { db.execSQL("ALTER TABLE orders ADD COLUMN booking_id INTEGER"); } catch (Exception ignored) {}
-        try { db.execSQL("ALTER TABLE orders ADD COLUMN created_at TEXT NOT NULL DEFAULT (datetime('now','localtime'))"); } catch (Exception ignored) {}
+        try {
+            db.execSQL("ALTER TABLE orders ADD COLUMN status TEXT NOT NULL DEFAULT 'pending'");
+        } catch (Exception ignored) {
+        }
+        try {
+            db.execSQL("ALTER TABLE orders ADD COLUMN booking_id INTEGER");
+        } catch (Exception ignored) {
+        }
+        try {
+            db.execSQL("ALTER TABLE orders ADD COLUMN created_at TEXT NOT NULL DEFAULT (datetime('now','localtime'))");
+        } catch (Exception ignored) {
+        }
         if (oldV < 5) {
-            try { db.execSQL("ALTER TABLE orders ADD COLUMN status TEXT DEFAULT 'pending'"); } catch (Exception ignore) {}
+            try {
+                db.execSQL("ALTER TABLE orders ADD COLUMN status TEXT DEFAULT 'pending'");
+            } catch (Exception ignore) {
+            }
         }
     }
 
     // Dòng model phục vụ UI list Admin (nếu bạn chưa có class riêng)
     public static class OrderRow {
-        public long id; public String code; public String customer;
-        public double total; public String status; public String createdAt; public @Nullable String courtName;
+        public long id;
+        public String code;
+        public String customer;
+        public double total;
+        public String status;
+        public String createdAt;
+        public @Nullable String courtName;
+
         public OrderRow(long id, String code, String customer, double total, String status, String createdAt, @Nullable String courtName) {
-            this.id=id; this.code=code; this.customer=customer; this.total=total; this.status=status; this.createdAt=createdAt; this.courtName=courtName;
+            this.id = id;
+            this.code = code;
+            this.customer = customer;
+            this.total = total;
+            this.status = status;
+            this.createdAt = createdAt;
+            this.courtName = courtName;
         }
     }
 
@@ -240,9 +274,14 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                         "LEFT JOIN Bookings b ON b.id=o.booking_id " +
                         "LEFT JOIN Courts c ON c.id=b.court_id ";
         String tail = " ORDER BY o.id DESC";
-        String sql; String[] args = null;
-        if (statusFilter==null || "all".equalsIgnoreCase(statusFilter)) { sql = base + tail; }
-        else { sql = base + " WHERE o.status=? " + tail; args = new String[]{ statusFilter }; }
+        String sql;
+        String[] args = null;
+        if (statusFilter == null || "all".equalsIgnoreCase(statusFilter)) {
+            sql = base + tail;
+        } else {
+            sql = base + " WHERE o.status=? " + tail;
+            args = new String[]{statusFilter};
+        }
 
         try (Cursor c = getReadableDatabase().rawQuery(sql, args)) {
             while (c.moveToNext()) {
@@ -260,7 +299,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     public void updateOrderStatus(long orderId, String status) {
         ContentValues cv = new ContentValues();
         cv.put("status", status);
-        getWritableDatabase().update("orders", cv, "id=?", new String[]{ String.valueOf(orderId) });
+        getWritableDatabase().update("orders", cv, "id=?", new String[]{String.valueOf(orderId)});
     }
 
 
@@ -277,21 +316,22 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
             if (c.moveToFirst()) {
                 com.example.sportcenterapp.models.User u = new com.example.sportcenterapp.models.User();
-                u.id        = c.getInt(0);
-                u.username  = c.getString(1);
-                u.fullName  = c.getString(2);
-                u.phone     = c.getString(3);
-                u.email     = c.getString(4);
-                u.vip       = (c.getInt(5) == 1);
-                u.avatar    = c.getString(6);
-                u.role      = c.getString(7);
+                u.id = c.getInt(0);
+                u.username = c.getString(1);
+                u.fullName = c.getString(2);
+                u.phone = c.getString(3);
+                u.email = c.getString(4);
+                u.vip = (c.getInt(5) == 1);
+                u.avatar = c.getString(6);
+                u.role = c.getString(7);
                 u.createdAt = c.getString(8);
-                u.address   = c.getString(9);
+                u.address = c.getString(9);
                 return u;
             }
         }
         return null;
     }
+
     public User getUserById(int userId) {
         User u = null;
         String sql =
@@ -300,28 +340,29 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         try (Cursor c = getReadableDatabase().rawQuery(sql, new String[]{String.valueOf(userId)})) {
             if (c.moveToFirst()) {
                 u = new User();
-                u.id        = c.getInt(0);
-                u.username  = c.getString(1);
-                u.fullName  = c.getString(2);
-                u.phone     = c.getString(3);
-                u.email     = c.getString(4);
-                u.vip       = (c.getInt(5) == 1);
-                u.avatar    = c.getString(6);
+                u.id = c.getInt(0);
+                u.username = c.getString(1);
+                u.fullName = c.getString(2);
+                u.phone = c.getString(3);
+                u.email = c.getString(4);
+                u.vip = (c.getInt(5) == 1);
+                u.avatar = c.getString(6);
                 u.createdAt = c.getString(7);
-                u.role      = c.getString(8);
-                u.address   = c.getString(9);
+                u.role = c.getString(8);
+                u.address = c.getString(9);
             }
         }
         return u;
     }
+
     // 4) updateUserProfile: đã đúng – chỉ nhắc lại cho đủ ngữ cảnh
     public boolean updateUserProfile(int userId, String fullName, String phone, String email,
                                      String address, @Nullable String avatar) {
         ContentValues v = new ContentValues();
         v.put("full_name", fullName);
-        v.put("phone",     phone);
-        v.put("email",     email);
-        v.put("address",   address);
+        v.put("phone", phone);
+        v.put("email", email);
+        v.put("address", address);
         if (avatar != null) v.put("avatar", avatar);
         return getWritableDatabase().update("Users", v, "id=?", new String[]{String.valueOf(userId)}) > 0;
     }
@@ -335,7 +376,6 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         v.put("password", newPass);
         return getWritableDatabase().update("Users", v, "id=?", new String[]{String.valueOf(userId)}) > 0;
     }
-
 
 
     // ===== Courts API =====
@@ -395,6 +435,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
             return db.insert("Bookings", null, v);
         }
     }
+
     public int updateBookingStatus(long bookingId, String newStatus) {
         ContentValues v = new ContentValues();
         v.put("status", newStatus); // "PENDING" | "CONFIRMED" | "CANCELLED" | "COMPLETED"
@@ -426,7 +467,6 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     }
 
 
-
     // models/Booking.java gợi ý: id, courtName, date, startTime, endTime, status, totalPrice, createdAt, image
     public List<com.example.sportcenterapp.models.Booking> getBookingsByUser(int userId) {
         String sql =
@@ -454,7 +494,6 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         }
         return list;
     }
-
 
 
     // ===== Shop / Cart API =====
@@ -536,7 +575,9 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         }
     }
 
-    /** Tổng tiền giỏ (double cho nhất quán với Products.price REAL) */
+    /**
+     * Tổng tiền giỏ (double cho nhất quán với Products.price REAL)
+     */
     public double getCartTotal(int userId) {
         try (SQLiteDatabase db = getReadableDatabase();
              Cursor c = db.rawQuery(
@@ -556,6 +597,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
      * - Ghi vào orders (user_id, total, created_at)
      * - Ghi vào order_items (order_id, product_id, name, price, quantity)
      * - Xoá CartItems của user
+     *
      * @return orderId (>0 nếu OK), -1 nếu thất bại/giỏ trống
      */
     public long checkoutFromCart(int userId) {
@@ -576,7 +618,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                             "WHERE ci.user_id = ?",
                     new String[]{String.valueOf(userId)});
             if (c.moveToFirst()) total = c.getDouble(0);
-            c.close(); c = null;
+            c.close();
+            c = null;
 
             if (total <= 0d) {
                 return -1; // rollback ở finally vì chưa setSuccessful
@@ -665,27 +708,29 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     }
 
     public List<Coach> getCoachesBySport(@Nullable String sport) {
-        List<Coach> list = new ArrayList<>();
-        SQLiteDatabase db = getReadableDatabase();
+        ArrayList<Coach> list = new ArrayList<>();
         Cursor cur;
         if (sport == null || sport.equals("Tất cả")) {
-            cur = db.rawQuery("SELECT id,name,sport,level,rate_per_hour,avatar,bio,phone,email,zalo FROM Coaches ORDER BY name", null);
+            cur = getReadableDatabase().rawQuery(
+                    "SELECT id,name,sport,level,rate_per_hour,avatar,bio,phone,email,zalo FROM Coaches ORDER BY name", null);
         } else {
-            cur = db.rawQuery("SELECT id,name,sport,level,rate_per_hour,avatar,bio,phone,email,zalo FROM Coaches WHERE sport=? ORDER BY name", new String[]{sport});
+            cur = getReadableDatabase().rawQuery(
+                    "SELECT id,name,sport,level,rate_per_hour,avatar,bio,phone,email,zalo FROM Coaches WHERE sport=? ORDER BY name",
+                    new String[]{sport});
         }
         try (cur) {
             while (cur.moveToNext()) {
                 Coach m = new Coach();
-                m.id = cur.getInt(0);
-                m.name = cur.getString(1);
-                m.sport = cur.getString(2);
-                m.level = cur.getString(3);
-                m.ratePerHour = cur.getDouble(4);
-                m.avatar = cur.getString(5);
-                m.bio = cur.getString(6);
-                m.phone = cur.getString(7);
-                m.email = cur.getString(8);
-                m.zalo = cur.getString(9);
+                m.setId(cur.getInt(0));
+                m.setName(cur.getString(1));
+                m.setSport(cur.getString(2));
+                m.setLevel(cur.getString(3));
+                m.setRatePerHour(cur.getDouble(4));
+                m.setAvatar(cur.getString(5));
+                m.setBio(cur.getString(6));
+                m.setPhone(cur.getString(7));
+                m.setEmail(cur.getString(8));
+                m.setZalo(cur.getString(9));
                 list.add(m);
             }
         }
@@ -718,13 +763,14 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         return list;
     }
 
-    /** Admin: cập nhật trạng thái đơn hàng: "pending" | "approved" | "cancelled" | "fulfilled"(nếu dùng) */
+    /**
+     * Admin: cập nhật trạng thái đơn hàng: "pending" | "approved" | "cancelled" | "fulfilled"(nếu dùng)
+     */
     public boolean updateStatus(long orderId, String newStatus) {
         ContentValues v = new ContentValues();
         v.put("status", newStatus);
         return getWritableDatabase().update("orders", v, "id=?", new String[]{String.valueOf(orderId)}) > 0;
     }
-
 
 
     //admin
@@ -735,9 +781,15 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         try (android.database.Cursor c = getReadableDatabase().rawQuery(sql, null)) {
             while (c.moveToNext()) {
                 var u = new com.example.sportcenterapp.models.User();
-                u.id = c.getInt(0); u.username = c.getString(1); u.fullName = c.getString(2);
-                u.phone = c.getString(3); u.email = c.getString(4); u.vip = c.getInt(5)==1;
-                u.avatar = c.getString(6); u.createdAt = c.getString(7); u.role = c.getString(8);
+                u.id = c.getInt(0);
+                u.username = c.getString(1);
+                u.fullName = c.getString(2);
+                u.phone = c.getString(3);
+                u.email = c.getString(4);
+                u.vip = c.getInt(5) == 1;
+                u.avatar = c.getString(6);
+                u.createdAt = c.getString(7);
+                u.role = c.getString(8);
                 list.add(u);
             }
         }
@@ -816,14 +868,14 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         String sql = "SELECT id, name, sport, surface, indoor, price, image FROM Courts ORDER BY name";
         try (Cursor c = getReadableDatabase().rawQuery(sql, null)) {
             while (c.moveToNext()) {
-                Court ct = new Court("Sân 7 người", 250000,"court_soccer");
-                ct.id      = c.getInt(0);
-                ct.name    = c.getString(1);
-                ct.sport   = c.getString(2);
+                Court ct = new Court("Sân 7 người", 250000, "court_soccer");
+                ct.id = c.getInt(0);
+                ct.name = c.getString(1);
+                ct.sport = c.getString(2);
                 ct.surface = c.getString(3);
-                ct.indoor  = c.getInt(4);       // model đang dùng int 0/1
-                ct.price   = c.getDouble(5);
-                ct.image   = c.getString(6);
+                ct.indoor = c.getInt(4);       // model đang dùng int 0/1
+                ct.price = c.getDouble(5);
+                ct.image = c.getString(6);
                 list.add(ct);
             }
         }
@@ -884,8 +936,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         try (Cursor c = getReadableDatabase().rawQuery(sql, null)) {
             while (c.moveToNext()) {
                 Product p = new Product();
-                p.id    = c.getInt(0);
-                p.name  = c.getString(1);
+                p.id = c.getInt(0);
+                p.name = c.getString(1);
                 p.price = c.getDouble(2);
                 p.stock = c.getInt(3);
                 p.image = c.getString(4);
@@ -902,8 +954,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         try (Cursor c = getReadableDatabase().rawQuery(sql, new String[]{String.valueOf(id)})) {
             if (c.moveToFirst()) {
                 Product p = new Product();
-                p.id    = c.getInt(0);
-                p.name  = c.getString(1);
+                p.id = c.getInt(0);
+                p.name = c.getString(1);
                 p.price = c.getDouble(2);
                 p.stock = c.getInt(3);
                 p.image = c.getString(4);
@@ -916,7 +968,9 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     /** Cập nhật hồ sơ: họ tên, điện thoại, email, (avatar nếu != null) */
 
 
-    /** Đổi mật khẩu (kiểm tra mật khẩu cũ) */
+    /**
+     * Đổi mật khẩu (kiểm tra mật khẩu cũ)
+     */
     public boolean updatePassword(int userId, String oldPass, String newPass) {
         try (SQLiteDatabase db = getReadableDatabase();
              Cursor c = db.rawQuery("SELECT password FROM Users WHERE id=?", new String[]{String.valueOf(userId)})) {
@@ -927,6 +981,65 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         ContentValues v = new ContentValues();
         v.put("password", newPass);
         return getWritableDatabase().update("Users", v, "id=?", new String[]{String.valueOf(userId)}) > 0;
+    }
+
+    // ===== COACHES CRUD =====
+    public List<Coach> getAllCoaches() {
+        ArrayList<Coach> list = new ArrayList<>();
+        String sql = "SELECT id,name,sport,level,rate_per_hour,avatar,bio,phone,email,zalo " +
+                "FROM " + TBL_COACHES + " ORDER BY name";
+        try (Cursor cur = getReadableDatabase().rawQuery(sql, null)) {
+            while (cur.moveToNext()) {
+                Coach m = new Coach();
+                m.setId(cur.getInt(0));
+                m.setName(cur.getString(1));
+                m.setSport(cur.getString(2));
+                m.setLevel(cur.getString(3));
+                m.setRatePerHour(cur.getDouble(4));
+                m.setAvatar(cur.getString(5));
+                m.setBio(cur.getString(6));
+                m.setPhone(cur.getString(7));
+                m.setEmail(cur.getString(8));
+                m.setZalo(cur.getString(9));
+                list.add(m);
+            }
+        }
+        return list;
+    }
+
+
+    public long insertCoach(Coach c) {
+        ContentValues v = new ContentValues();
+        v.put("name", c.getName());
+        v.put("sport", c.getSport());
+        v.put("level", c.getLevel());
+        v.put("rate_per_hour", c.getRatePerHour());
+        v.put("avatar", c.getAvatar());
+        v.put("bio", c.getBio());
+        v.put("phone", c.getPhone());
+        v.put("email", c.getEmail());
+        v.put("zalo", c.getZalo());
+        return getWritableDatabase().insert(TBL_COACHES, null, v);
+    }
+
+    public boolean updateCoach(Coach c) {
+        ContentValues v = new ContentValues();
+        v.put("name", c.getName());
+        v.put("sport", c.getSport());
+        v.put("level", c.getLevel());
+        v.put("rate_per_hour", c.getRatePerHour());
+        v.put("avatar", c.getAvatar());
+        v.put("bio", c.getBio());
+        v.put("phone", c.getPhone());
+        v.put("email", c.getEmail());
+        v.put("zalo", c.getZalo());
+        return getWritableDatabase().update(TBL_COACHES, v, "id=?",
+                new String[]{String.valueOf(c.getId())}) > 0;
+    }
+
+    public boolean deleteCoach(int id) {
+        return getWritableDatabase().delete(TBL_COACHES, "id=?",
+                new String[]{String.valueOf(id)}) > 0;
     }
 }
 

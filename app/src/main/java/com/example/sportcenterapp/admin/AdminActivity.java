@@ -11,6 +11,7 @@ import androidx.fragment.app.Fragment;
 import com.example.sportcenterapp.LoginActivity;
 import com.example.sportcenterapp.R;
 import com.example.sportcenterapp.admin.fragments.AdminDashboardFragment;
+import com.example.sportcenterapp.admin.fragments.AdminPeopleFragment;
 import com.example.sportcenterapp.admin.fragments.BookingsFragment;
 import com.example.sportcenterapp.admin.fragments.InventoryFragment;
 import com.example.sportcenterapp.admin.fragments.OrdersFragment;
@@ -45,7 +46,7 @@ public class AdminActivity extends AppCompatActivity {
                 if (id == R.id.menu_orders)    { switchTo(new OrdersFragment());        return true; }
                 if (id == R.id.menu_bookings)  { switchTo(new BookingsFragment());      return true; }
                 if (id == R.id.menu_inventory) { switchTo(new InventoryFragment());     return true; }
-                if (id == R.id.menu_users)     { switchTo(new UsersFragment());         return true; }
+                if (id == R.id.menu_people)     { switchTo(new AdminPeopleFragment());   return true; }
                 return false;
             });
         }
@@ -90,9 +91,9 @@ public class AdminActivity extends AppCompatActivity {
                 // Kho & Sân (gộp Products/Courts)
                 switchTo(new InventoryFragment());
                 return true;
-            } else if (id == R.id.menu_users) {
+            } else if (id == R.id.menu_people) {
                 // Người dùng
-                switchTo(new UsersFragment());
+                switchTo(new AdminPeopleFragment());
                 return true;
             }
             return false;

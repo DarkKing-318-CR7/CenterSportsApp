@@ -4,5 +4,5 @@
     <item android:id="@+id/menu_orders"    android:icon="@drawable/ic_orders"             android:title="Đơn hàng"/>
     <item android:id="@+id/menu_bookings"  android:icon="@drawable/ic_calendar_history"   android:title="Đặt sân"/>
     <item android:id="@+id/menu_inventory" android:icon="@drawable/ic_shop"               android:title="Kho và Sân"/>
-    <item android:id="@+id/menu_users"     android:icon="@drawable/ic_person"             android:title="Người dùng"/>
+    <item android:id="@+id/menu_people"     android:icon="@drawable/ic_person"             android:title="Tài khoản và HLV"/>
 </menu>
