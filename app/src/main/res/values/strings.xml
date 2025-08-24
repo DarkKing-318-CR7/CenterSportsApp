@@ -27,6 +27,18 @@
     <string name="action_view_details">Xem thông tin</string>
     <string name="label_created_at">Tạo lúc</string>
     <string name="label_Address">Địa chỉ</string>
+    <string name="approve">Duyệt</string>
+    <string name="reject">Từ chối</string>
+    <string name="mark_cancelled">Hủy</string>
+    <string name="status_pending">Chờ duyệt</string>
+    <string name="status_approved">Đã duyệt</string>
+    <string name="status_cancelled">Đã hủy</string>
+    <string name="status_rejected">Đã từ chối</string>
+    <!-- res/values/strings.xml -->
+    <string name="label_user_hash">User #%1$d</string>
+    <string name="label_currency_suffix">%1$sđ</string>
+
+
 
 
 </resources>

@@ -33,9 +33,9 @@ public class OrderItemsAdapter extends RecyclerView.Adapter<OrderItemsAdapter.VH
     public void onBindViewHolder(@NonNull VH h, int pos) {
         OrderItem it = data.get(pos);
         h.tvName.setText(it.name);
-        h.tvQty.setText(String.format(Locale.getDefault(), "x%d", it.quantity));
+        h.tvQty.setText(String.format(Locale.getDefault(), "x%d", it.qty));
         h.tvPrice.setText(String.format(Locale.getDefault(), "%,dđ", it.price));
-        h.tvLineTotal.setText(String.format(Locale.getDefault(), "%,dđ", it.price * it.quantity));
+        h.tvLineTotal.setText(String.format(Locale.getDefault(), "%,dđ", it.price * it.qty));
     }
 
     @Override

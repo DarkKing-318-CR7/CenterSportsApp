@@ -1,136 +1,66 @@
 package com.example.sportcenterapp.adapters;
 
-import android.content.Context;
-import android.view.LayoutInflater;
-import android.view.View;
-import android.view.ViewGroup;
-import android.widget.ImageButton;
-import android.widget.ImageView;
-import android.widget.TextView;
-
+import android.view.*;
+import android.widget.*;
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 import androidx.recyclerview.widget.RecyclerView;
-
+import com.bumptech.glide.Glide;
 import com.example.sportcenterapp.R;
 import com.example.sportcenterapp.models.Product;
+import com.example.sportcenterapp.net.ApiClient;
 
+import java.text.NumberFormat;
 import java.util.List;
 import java.util.Locale;
 
 public class ProductAdapter extends RecyclerView.Adapter<ProductAdapter.VH> {
-
-    public interface OnAdd    { void onAdd(Product p); }
-    public interface OnEdit   { void onEdit(Product p); }
-    public interface OnDelete { void onDelete(Product p); }
-
-    private final List<Product> items;
-    private final Context context;
-
-    @Nullable private final OnAdd onAdd;       // Player
-    @Nullable private final OnEdit onEdit;     // Admin
-    @Nullable private final OnDelete onDelete; // Admin
-    private final boolean isAdmin;
-
-    // Player giữ nguyên
-    public ProductAdapter(List<Product> items, Context context) {
-        this(items, context, null, null, null, false);
+    public interface OnAction {
+        void onAddToCart(Product p);
+        void onClick(Product p); // (nếu muốn mở chi tiết)
     }
 
-    // Player muốn bắt nút “Thêm giỏ”
-    public ProductAdapter(List<Product> items, Context context, @Nullable OnAdd onAdd) {
-        this(items, context, onAdd, null, null, false);
+    private final List<Product> ds;
+    private final OnAction cb;
+    private final NumberFormat money = NumberFormat.getInstance(new Locale("vi","VN"));
+
+    public ProductAdapter(List<Product> ds, OnAction cb){ this.ds = ds; this.cb = cb; }
+
+    static class VH extends RecyclerView.ViewHolder {
+        ImageView image; TextView tvName, tvPrice; Button btnAdd;
+        VH(View v){
+            super(v);
+            image   = v.findViewById(R.id.image);
+            tvName  = v.findViewById(R.id.tvName);
+            tvPrice = v.findViewById(R.id.tvPrice);
+            btnAdd  = v.findViewById(R.id.btnAdd);
+        }
     }
 
-    // Admin
-    public ProductAdapter(List<Product> items, Context context,
-                          @Nullable OnAdd onAdd,
-                          @Nullable OnEdit onEdit,
-                          @Nullable OnDelete onDelete,
-                          boolean isAdmin) {
-        this.items = items;
-        this.context = context;
-        this.onAdd = onAdd;
-        this.onEdit = onEdit;
-        this.onDelete = onDelete;
-        this.isAdmin = isAdmin;
-    }
-
-    @NonNull @Override
-    public VH onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        int layout = isAdmin ? R.layout.item_admin_product : R.layout.item_product;
-        View v = LayoutInflater.from(parent.getContext()).inflate(layout, parent, false);
+    @NonNull @Override public VH onCreateViewHolder(@NonNull ViewGroup p, int vt) {
+        View v = LayoutInflater.from(p.getContext()).inflate(R.layout.item_product, p, false);
         return new VH(v);
     }
 
-    @Override
-    public void onBindViewHolder(@NonNull VH h, int position) {
-        Product p = items.get(position);
+    @Override public void onBindViewHolder(@NonNull VH h, int pos) {
+        Product p = ds.get(pos);
+        h.tvName.setText(p.name != null ? p.name : "");
+        h.tvPrice.setText(money.format(p.price) + "đ");
 
-        if (h.tvName != null)  h.tvName.setText(p.getName());
-        if (h.tvPrice != null) h.tvPrice.setText(String.format(Locale.getDefault(), "%,.0fđ", p.getPrice()));
-        if (h.tvStock != null) h.tvStock.setText("Kho: " + p.getStock());
-
-        // --- LOAD ẢNH an toàn: tên drawable hoặc URL (nếu bạn thêm Glide) ---
-        ImageView target = h.ivImage; // đã bắt nhiều khả năng id trong VH
-        if (target != null) {
-            String img = p.getImage();
-            if (img != null && !img.trim().isEmpty()) {
-                if (img.startsWith("http")) {
-                    // Nếu dùng ảnh URL, bật Glide (khuyến nghị). Nếu chưa add Glide, dùng placeholder tạm.
-                    // Glide.with(h.itemView).load(img).placeholder(R.drawable.placeholder_product).into(target);
-                    target.setImageResource(R.drawable.placeholder_product);
-                } else {
-                    int resId = h.itemView.getContext().getResources()
-                            .getIdentifier(img.trim(), "drawable", h.itemView.getContext().getPackageName());
-                    target.setImageResource(resId != 0 ? resId : R.drawable.placeholder_product);
-                }
-            } else {
-                target.setImageResource(R.drawable.placeholder_product);
-            }
-        }
-        // --- Hành vi theo role ---
-        if (isAdmin) {
-            // Click item = Sửa
-            h.itemView.setOnClickListener(v -> { if (onEdit != null) onEdit.onEdit(p); });
-            if (h.btnEdit   != null) h.btnEdit.setOnClickListener(v -> { if (onEdit   != null) onEdit.onEdit(p); });
-            if (h.btnDelete != null) h.btnDelete.setOnClickListener(v -> { if (onDelete != null) onDelete.onDelete(p); });
+        String img = p.image;
+        if (img != null && !img.isEmpty()) {
+            if (!img.startsWith("http")) img = ApiClient.BASE_URL + (img.startsWith("/") ? img.substring(1) : img);
+            Glide.with(h.image.getContext())
+                    .load(img)
+                    .placeholder(R.drawable.placeholder_court)
+                    .error(R.drawable.placeholder_court)
+                    .into(h.image);
         } else {
-            // Player: chỉ nút “Thêm giỏ” mới thêm
-            if (h.btnAdd != null) h.btnAdd.setOnClickListener(v -> { if (onAdd != null) onAdd.onAdd(p); });
+            h.image.setImageResource(R.drawable.placeholder_court);
         }
+
+        h.itemView.setOnClickListener(v -> { if (cb!=null) cb.onClick(p); });
+        h.btnAdd.setOnClickListener(v -> { if (cb!=null) cb.onAddToCart(p); });
     }
 
-    @Override public int getItemCount() { return items.size(); }
-
-    static class VH extends RecyclerView.ViewHolder {
-        ImageView ivImage;            // sẽ gán vào bất kỳ id ảnh nào tìm thấy
-        TextView tvName, tvPrice, tvStock;
-        ImageButton btnEdit, btnDelete; // admin
-        View btnAdd;                   // player
-
-        VH(@NonNull View v) {
-            super(v);
-            // --- bind text chung ---
-            tvName   = v.findViewById(R.id.tvName);
-            tvPrice  = v.findViewById(R.id.tvPrice);
-            tvStock  = v.findViewById(R.id.tvStock);
-
-            // --- tìm ImageView theo nhiều ID khả dụng ---
-            ImageView img = v.findViewById(R.id.ivImage);
-            if (img == null) img = v.findViewById(R.id.img);
-            if (img == null) img = v.findViewById(R.id.image);
-            ivImage = img; // có thể null, onBind đã check
-
-            // --- nút admin (có thể null nếu layout player) ---
-            btnEdit   = v.findViewById(R.id.btnEdit);
-            btnDelete = v.findViewById(R.id.btnDelete);
-
-            // --- nút player (có thể null nếu layout admin) ---
-            View addBtn = v.findViewById(R.id.btnAdd);
-            if (addBtn == null) addBtn = v.findViewById(R.id.btnAdd);
-            if (addBtn == null) addBtn = v.findViewById(R.id.btnAdd);
-            btnAdd = addBtn;
-        }
-    }
+    @Override public int getItemCount() { return ds.size(); }
 }

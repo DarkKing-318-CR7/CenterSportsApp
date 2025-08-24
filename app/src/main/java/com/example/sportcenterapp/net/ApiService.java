@@ -1,6 +1,7 @@
 package com.example.sportcenterapp.net;
 
 import com.example.sportcenterapp.models.Booking;
+import com.example.sportcenterapp.models.OrderItem;
 import com.example.sportcenterapp.models.Product;
 import com.google.gson.annotations.SerializedName;
 import com.example.sportcenterapp.models.Court;
@@ -155,4 +156,88 @@ public interface ApiService {
         public double price;
         public int stock, active;
     }
+
+    // === SHOP / CART / ORDERS ===
+    @POST("orders_create.php")
+    Call<SimpleRespId> createOrder(@Body OrderCreateReq req);
+
+    @GET("orders_list_by_user.php")
+    Call<List<OrderDTO>> getOrdersByUser(@Query("user_id") int userId);
+
+    @GET("order_items_by_order.php")
+    Call<List<OrderItem>> getOrderItems(@Query("order_id") int orderId);
+
+    @GET("orders_list_all.php")
+    Call<List<ApiService.OrderDTO>> adminGetAllOrders();
+
+    @GET("orders_detail.php")
+    Call<ApiService.OrderDTO> adminGetOrderDetail(@Query("order_id") int orderId);
+
+    @GET("orders_list_admin.php")
+    Call<List<OrderAdminDTO>> getOrdersAdmin(@Query("status") String status);
+
+    @POST("orders_update_status.php")
+    Call<ApiService.SimpleResp> adminUpdateOrderStatus(
+            @Query("order_id") int orderId,
+            @Query("status") String status );// PENDING | APPROVED | REJECTED | CANCELED
+
+    @POST("orders_update_status.php")
+    Call<SimpleResp> updateOrderStatus(@Body OrderStatusUpdateReq body);
+
+
+
+    // ==== DTOs ====
+    class OrderCreateReq {
+        public int user_id;
+        public List<Item> items;
+        public static class Item {
+            public int product_id;
+            public int qty;
+            public double price;
+            public String name;  // tùy, có thể bỏ nếu server không cần
+        }
+    }
+    class CreateOrderResp { public boolean ok; public int order_id; public String error; }
+    // Nếu bạn chưa có:
+    class Order {
+        public int id, user_id;
+        public double total;
+        public String status, created_at;
+        public List<OrderItem> items;
+    }
+    class OrderDTO {
+        public int id;
+        public String status;
+        public double total;   // phải khớp alias trong SQL
+        public String created_at;
+    }
+
+    public static class OrderAdminDTO {
+        @SerializedName("id") public int id;
+
+        // tên người dùng có thể là user_name / username / user / name
+        @SerializedName(value = "user_name", alternate = {"username", "user", "name"})
+        public String user_name;
+
+        // id người dùng có thể là user_id / uid / userId
+        @SerializedName(value = "user_id", alternate = {"uid", "userId"})
+        public Integer user_id;
+
+        @SerializedName("status") public String status;
+        @SerializedName("created_at") public String created_at;
+
+        // có thể là String hoặc Number nên để Object
+        @SerializedName("total") public Object total;
+    }
+    class OrderStatusUpdateReq { public int order_id; public String status; }
+    class OrderItem {
+        public int id;          // id bản ghi order_items (nếu có)
+        public int product_id;
+        public String name;     // tên sản phẩm (server nên JOIN và trả sẵn)
+        public Object price;    // có thể số / chuỗi -> để Object
+        public int qty;
+        public String image;    // (optional) đường dẫn ảnh, nếu server trả
+    }
+
+
 }

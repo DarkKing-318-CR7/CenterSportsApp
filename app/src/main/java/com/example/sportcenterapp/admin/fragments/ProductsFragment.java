@@ -19,9 +19,9 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.sportcenterapp.R;
+import com.example.sportcenterapp.admin.adapters.AdminProductAdapter;
 import com.example.sportcenterapp.database.DatabaseHelper;
 import com.example.sportcenterapp.models.Product;
-import com.example.sportcenterapp.adapters.ProductAdapter;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -32,10 +32,11 @@ public class ProductsFragment extends Fragment {
     private DatabaseHelper db;
     private RecyclerView rv;
     private TextView empty;
-    private ProductAdapter adapter;
+    private AdminProductAdapter adapter;
     private final List<Product> data = new ArrayList<>();
 
-    @Nullable @Override
+    @Nullable
+    @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View root = inflater.inflate(R.layout.fragment_admin_products, container, false);
 
@@ -45,24 +46,33 @@ public class ProductsFragment extends Fragment {
         Button btnAdd = root.findViewById(R.id.btnAddProduct);
 
         rv.setLayoutManager(new LinearLayoutManager(requireContext()));
-        adapter = new ProductAdapter(data, requireContext(),
-                null,
-                p -> showEditProductDialog(p),
-                p -> { db.deleteProduct(p.getId()); loadData(); },
-                true);
+        adapter = new AdminProductAdapter(data, new AdminProductAdapter.OnAction() {
+            @Override public void onEdit(Product p) { showEditProductDialog(p); }
+            @Override public void onDelete(Product p) { confirmDeleteProduct(p); } // sẽ gọi khi swipe
+        });
         rv.setAdapter(adapter);
 
-        // Swipe để XÓA (kéo trái/phải)
-        new ItemTouchHelper(new ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.LEFT | ItemTouchHelper.RIGHT) {
+        // Vuốt trái/phải để xoá (confirm; hủy -> khôi phục)
+        new ItemTouchHelper(new ItemTouchHelper.SimpleCallback(0,
+                ItemTouchHelper.LEFT | ItemTouchHelper.RIGHT) {
             @Override public boolean onMove(@NonNull RecyclerView r, @NonNull RecyclerView.ViewHolder a, @NonNull RecyclerView.ViewHolder b) { return false; }
             @Override public void onSwiped(@NonNull RecyclerView.ViewHolder vh, int dir) {
                 int pos = vh.getBindingAdapterPosition();
-                if (pos >= 0 && pos < data.size()) confirmDeleteProduct(data.get(pos));
+                if (pos < 0 || pos >= data.size()) return;
+                Product p = data.get(pos);
+                new AlertDialog.Builder(requireContext())
+                        .setTitle("Xoá sản phẩm")
+                        .setMessage("Xoá \"" + (p.getName()!=null?p.getName():("SP #"+p.getId())) + "\"?")
+                        .setPositiveButton("Xoá", (d, w) -> {
+                            db.deleteProduct(p.getId());  // nếu đã có API thì gọi API ở đây
+                            loadData();
+                        })
+                        .setNegativeButton("Huỷ", (d, w) -> adapter.notifyItemChanged(pos))
+                        .show();
             }
         }).attachToRecyclerView(rv);
 
         btnAdd.setOnClickListener(v -> showAddProductDialog());
-
         loadData();
         return root;
     }
@@ -127,7 +137,6 @@ public class ProductsFragment extends Fragment {
                 .show();
     }
 
-    // ===== DELETE =====
     private void confirmDeleteProduct(Product p) {
         new AlertDialog.Builder(requireContext())
                 .setTitle("Xóa sản phẩm")

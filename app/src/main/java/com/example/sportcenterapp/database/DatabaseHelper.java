@@ -38,6 +38,19 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
     @Override
     public void onCreate(SQLiteDatabase db) {
+        db.execSQL("CREATE TABLE IF NOT EXISTS Coach (" +
+                "id INTEGER PRIMARY KEY AUTOINCREMENT," +
+                "name TEXT," +
+                "sport TEXT," +
+                "level TEXT," +
+                "rate_per_hour REAL," +
+                "avatar TEXT," +
+                "bio TEXT," +
+                "phone TEXT," +
+                "email TEXT," +
+                "zalo TEXT" +
+                ")");
+
         // ==== Users ====
         db.execSQL("CREATE TABLE IF NOT EXISTS Users (" +
                 "id INTEGER PRIMARY KEY AUTOINCREMENT," +
