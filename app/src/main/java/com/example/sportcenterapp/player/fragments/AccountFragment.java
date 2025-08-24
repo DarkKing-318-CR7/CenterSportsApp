@@ -1,199 +1,252 @@
 package com.example.sportcenterapp.player.fragments;
 
+import android.app.AlertDialog;
+import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
-import android.view.LayoutInflater;
-import android.view.View;
-import android.view.ViewGroup;
-import android.widget.Button;
-import android.widget.EditText;
-import android.widget.ImageView;
-import android.widget.TextView;
-import android.widget.Toast;
-
+import android.text.TextUtils;
+import android.view.*;
+import android.widget.*;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.appcompat.app.AlertDialog;
 import androidx.fragment.app.Fragment;
 
-import com.example.sportcenterapp.R;
-import com.example.sportcenterapp.database.DatabaseHelper;
-import com.example.sportcenterapp.models.User;
-import com.example.sportcenterapp.utils.SessionManager;
+import com.bumptech.glide.Glide;
 import com.example.sportcenterapp.LoginActivity;
-import com.google.android.material.dialog.MaterialAlertDialogBuilder;
-import com.google.android.material.snackbar.Snackbar;
+import com.example.sportcenterapp.R;
+import com.example.sportcenterapp.models.User;
+import com.example.sportcenterapp.net.ApiClient;
+import com.example.sportcenterapp.net.ApiService;
+import com.example.sportcenterapp.utils.SessionManager;
+
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 public class AccountFragment extends Fragment {
 
     private ImageView ivAvatar;
     private TextView tvUsername, tvVip, tvCreatedAt;
-    private EditText etFullName, etPhone, etEmail,etAddress;
-    private View groupDetails;
-    private Button btnViewDetails, btnEdit, btnSave, btnCancel,
-            btnChangePass, btnBookingHistory, btnOrderHistory, btnChat, btnLogout;
+    private EditText etFullName, etPhone, etEmail, etAddress;
+    private View btnViewDetails, groupDetails, btnEdit, btnSave, btnCancel;
+    private View btnChangePass, btnBookingHistory, btnOrderHistory, btnChat, btnLogout;
 
-    private User user;
+    private ApiService api;
+    private int userId;
+    private User current;
+    private SessionManager sm;
+    @Nullable @Override
+    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle s) {
+        return inflater.inflate(R.layout.fragment_account, container, false);
+    }
 
-    @Nullable
-    @Override public View onCreateView(@NonNull LayoutInflater inflater,
-                                       @Nullable ViewGroup container,
-                                       @Nullable Bundle savedInstanceState) {
-        View v = inflater.inflate(R.layout.fragment_account, container, false);
-
-        // Header
+    @Override public void onViewCreated(@NonNull View v, @Nullable Bundle s) {
+        super.onViewCreated(v, s);
+        // bind views — các ID khớp file fragment_account.xml
         ivAvatar = v.findViewById(R.id.ivAvatar);
         tvUsername = v.findViewById(R.id.tvUsername);
         tvVip = v.findViewById(R.id.tvVip);
-
-        // Details (ẩn mặc định)
-        groupDetails = v.findViewById(R.id.groupDetails);
         tvCreatedAt = v.findViewById(R.id.tvCreatedAt);
-        etFullName  = v.findViewById(R.id.etFullName);
-        etPhone     = v.findViewById(R.id.etPhone);
-        etEmail     = v.findViewById(R.id.etEmail);
-        etAddress =v.findViewById(R.id.etAddress);
 
-        btnViewDetails   = v.findViewById(R.id.btnViewDetails);
-        btnEdit          = v.findViewById(R.id.btnEdit);
-        btnSave          = v.findViewById(R.id.btnSave);
-        btnCancel        = v.findViewById(R.id.btnCancel);
-        btnChangePass    = v.findViewById(R.id.btnChangePass);
-        btnBookingHistory= v.findViewById(R.id.btnBookingHistory);
-        btnOrderHistory  = v.findViewById(R.id.btnOrderHistory);
-        btnChat          = v.findViewById(R.id.btnChat);
-        btnLogout        = v.findViewById(R.id.btnLogout);
+        btnViewDetails = v.findViewById(R.id.btnViewDetails);
+        groupDetails = v.findViewById(R.id.groupDetails);
 
-        loadUser();
-        setupActions();
+        etFullName = v.findViewById(R.id.etFullName);
+        etPhone = v.findViewById(R.id.etPhone);
+        etEmail = v.findViewById(R.id.etEmail);
+        etAddress = v.findViewById(R.id.etAddress);
 
-        return v;
+        btnEdit = v.findViewById(R.id.btnEdit);
+        btnSave = v.findViewById(R.id.btnSave);
+        btnCancel = v.findViewById(R.id.btnCancel);
+
+        btnChangePass = v.findViewById(R.id.btnChangePass);
+        btnBookingHistory = v.findViewById(R.id.btnBookingHistory);
+        btnOrderHistory = v.findViewById(R.id.btnOrderHistory);
+        btnChat = v.findViewById(R.id.btnChat);
+        btnLogout = v.findViewById(R.id.btnLogout);
+
+        api = ApiClient.getInstance().create(ApiService.class);
+        userId = requireContext().getSharedPreferences("session", 0).getInt("user_id", 0);
+
+        setEditMode(false);
+        etEmail.setEnabled(false); // không cho đổi email
+
+        btnViewDetails.setOnClickListener(v1 -> toggleDetails());
+        btnEdit.setOnClickListener(v12 -> setEditMode(true));
+        btnCancel.setOnClickListener(v13 -> { bind(current); setEditMode(false); });
+        btnSave.setOnClickListener(v14 -> saveProfile());
+
+        btnChangePass.setOnClickListener(v15 -> showChangePasswordDialog());
+        btnBookingHistory.setOnClickListener(v16 -> {
+            // mở BookingHistoryFragment
+            requireActivity().getSupportFragmentManager().beginTransaction()
+                    .replace(R.id.player_nav_host, new BookingHistoryFragment())
+                    .addToBackStack(null)
+                    .commit();
+        });
+
+        btnOrderHistory.setOnClickListener(v17 -> {
+            // mở OrderHistoryFragment
+            requireActivity().getSupportFragmentManager().beginTransaction()
+                    .replace(R.id.player_nav_host, new OrdersFragment())
+                    .addToBackStack(null)
+                    .commit();
+        });
+
+        btnChat.setOnClickListener(v18 -> {
+            // mở ChatSupportFragment
+            requireActivity().getSupportFragmentManager().beginTransaction()
+                    .replace(R.id.player_nav_host, new ChatSupportFragment())
+                    .addToBackStack(null)
+                    .commit();
+        });
+
+        View btnLogout = v.findViewById(R.id.btnLogout);
+        btnLogout.setEnabled(true);            // phòng trường hợp đang bị disable trong XML
+        btnLogout.setOnClickListener(view -> doLogout());
     }
 
-    private void loadUser() {
-        int uid = new SessionManager(requireContext()).getUserId();
-        try (DatabaseHelper db = new DatabaseHelper(requireContext())) {
-            user = db.getUserById(uid);
+    private void toggleDetails() {
+        int vis = groupDetails.getVisibility() == View.VISIBLE ? View.GONE : View.VISIBLE;
+        groupDetails.setVisibility(vis);
+        if (vis == View.VISIBLE && current != null) bind(current);
+        if (btnViewDetails instanceof Button) {
+            ((Button) btnViewDetails).setText(
+                    vis == View.VISIBLE ? getString(R.string.action_hide_details) : getString(R.string.action_view_details)
+            );
         }
-        if (user == null) return;
-
-        // Header
-        tvUsername.setText(user.username + " • " + safe(user.fullName));
-        // Hiển thị thông tin VIP
-        tvVip.setText(user.vip ? "VIP" : "Thành viên thường");
-
-
-        // Avatar: nếu bạn lưu tên drawable trong cột avatar (vd: "ic_person")
-        int resId = getResources().getIdentifier(
-                user.avatar != null ? user.avatar : "ic_person",
-                "drawable",
-                requireContext().getPackageName()
-        );
-        ivAvatar.setImageResource(resId != 0 ? resId : R.drawable.ic_person);
-
-        // Details (khi mở)
-        etFullName.setText(safe(user.fullName));
-        etPhone.setText(safe(user.phone));
-        etEmail.setText(safe(user.email));
-        etAddress.setText(safe(user.address));
-        tvCreatedAt.setText(safe(user.createdAt));
-
-        setEditable(false);
     }
 
-    private void setupActions() {
-        btnViewDetails.setOnClickListener(v -> {
-            groupDetails.setVisibility(groupDetails.getVisibility() == View.VISIBLE
-                    ? View.GONE : View.VISIBLE);
-            btnViewDetails.setText(groupDetails.getVisibility()==View.VISIBLE
-                    ? "Ẩn thông tin" : "Xem thông tin");
-        });
+    private void setEditMode(boolean edit) {
+        etFullName.setEnabled(edit);
+        etPhone.setEnabled(edit);
+        etAddress.setEnabled(edit);
 
-        btnEdit.setOnClickListener(v -> setEditable(true));
+        btnEdit.setVisibility(edit ? View.GONE : View.VISIBLE);
+        btnSave.setVisibility(edit ? View.VISIBLE : View.GONE);
+        btnCancel.setVisibility(edit ? View.VISIBLE : View.GONE);
+    }
 
-        btnCancel.setOnClickListener(v -> {
-            // khôi phục dữ liệu cũ
-            etFullName.setText(safe(user.fullName));
-            etPhone.setText(safe(user.phone));
-            etEmail.setText(safe(user.email));
-            etAddress.setText(safe(user.address));
-            setEditable(false);
-        });
-
-        btnSave.setOnClickListener(v -> {
-            String full = etFullName.getText().toString().trim();
-            String phone= etPhone.getText().toString().trim();
-            String email= etEmail.getText().toString().trim();
-            String address = etAddress.getText().toString().trim();
-
-            try (DatabaseHelper db = new DatabaseHelper(requireContext())) {
-                db.updateUserProfile(user.id, full, phone, email, address,null);
+    private void loadProfile() {
+        sm = SessionManager.get(requireContext());
+        int userId = sm.getUserId();
+        if (userId <= 0) {
+            toast("Chưa đăng nhập");
+            // Gợi ý: chuyển về LoginActivity nếu cần
+            // startActivity(new Intent(requireContext(), LoginActivity.class));
+            // requireActivity().finish();
+            return;
+        }
+        api.getUserProfile(userId).enqueue(new Callback<ApiService.UserResponse>() {
+            @Override public void onResponse(Call<ApiService.UserResponse> call, Response<ApiService.UserResponse> res) {
+                if (!res.isSuccessful() || res.body()==null || !res.body().success || res.body().user==null) {
+                    toast("Không tải được hồ sơ"); return;
+                }
+                current = res.body().user;
+                bind(current);
             }
-            Snackbar.make(requireView(), "Đã lưu thay đổi", Snackbar.LENGTH_SHORT).show();
-            // cập nhật lại header + state
-            user.fullName = full; user.phone = phone; user.email = email;user.address= address;
-            tvUsername.setText(user.username + " • " + safe(user.fullName));
-            setEditable(false);
-        });
-
-        btnChangePass.setOnClickListener(v -> showChangePasswordDialog());
-
-        btnBookingHistory.setOnClickListener(v ->
-                navigateTo(new BookingHistoryFragment()));
-
-        btnOrderHistory.setOnClickListener(v ->
-                navigateTo(new OrdersFragment()));
-
-        btnChat.setOnClickListener(v ->
-                navigateTo(new ChatSupportFragment()));
-
-        btnLogout.setOnClickListener(v -> {
-            new SessionManager(requireContext()).logout();
-            requireActivity().finish(); // hoặc chuyển về LoginActivity
+            @Override public void onFailure(Call<ApiService.UserResponse> call, Throwable t) { toast("Lỗi mạng: " + t.getMessage()); }
         });
     }
 
-    private void setEditable(boolean editable){
-        etFullName.setEnabled(editable);
-        etPhone.setEnabled(editable);
-        etEmail.setEnabled(editable);
-        etAddress.setEnabled(editable);
+    private void bind(User u) {
+        if (u == null) return;
+        tvUsername.setText(n(u.username));
+        tvVip.setText(getString(R.string.member_regular));
+        tvCreatedAt.setText(getString(R.string.label_created_at) + " " + n(u.createdAt));
 
-        btnEdit.setVisibility(editable ? View.GONE : View.VISIBLE);
-        btnSave.setVisibility(editable ? View.VISIBLE : View.GONE);
-        btnCancel.setVisibility(editable ? View.VISIBLE : View.GONE);
+        etFullName.setText(n(u.fullName));
+        etPhone.setText(n(u.phone));
+        etEmail.setText(n(u.email));
+        etAddress.setText(n(u.address));
+
+        String avatar = n(u.avatar);
+        if (!avatar.isEmpty() && (avatar.startsWith("http") || avatar.startsWith("/"))) {
+            Glide.with(this).load(avatar).placeholder(R.drawable.ic_person).into(ivAvatar);
+        } else {
+            ivAvatar.setImageResource(R.drawable.ic_person);
+        }
+    }
+
+    private void saveProfile() {
+        if (current == null) return;
+        ApiService.UserUpdateRequest body = new ApiService.UserUpdateRequest();
+        body.fullName = etFullName.getText().toString().trim();
+        body.phone = etPhone.getText().toString().trim();
+        body.address = etAddress.getText().toString().trim();
+        // nếu cho phép đổi avatar, bạn có thể thêm field ở UI; hiện layout của bạn không có ô avatar nên bỏ qua
+
+        api.updateUser(userId, body).enqueue(new Callback<ApiService.BaseResponse>() {
+            @Override public void onResponse(Call<ApiService.BaseResponse> call, Response<ApiService.BaseResponse> res) {
+                if (res.isSuccessful() && res.body()!=null && res.body().success) {
+                    toast("Đã lưu thay đổi");
+                    // cập nhật local
+                    current.fullName = body.fullName;
+                    current.phone = body.phone;
+                    current.address = body.address;
+                    setEditMode(false);
+                } else toast("Lưu thất bại");
+            }
+            @Override public void onFailure(Call<ApiService.BaseResponse> call, Throwable t) { toast("Lỗi mạng: " + t.getMessage()); }
+        });
     }
 
     private void showChangePasswordDialog() {
-        // dialog đơn giản
-        View content = LayoutInflater.from(requireContext())
-                .inflate(R.layout.dialog_change_password, null, false);
-        EditText etOld = content.findViewById(R.id.etOld);
-        EditText etNew = content.findViewById(R.id.etNew);
+        View form = LayoutInflater.from(requireContext()).inflate(R.layout.dialog_change_password, null, false);
+        EditText etOld = form.findViewById(R.id.etOld);
+        EditText etNew = form.findViewById(R.id.etNew);
+        EditText etRe  = form.findViewById(R.id.etRe);
 
-        new MaterialAlertDialogBuilder(requireContext())
-                .setTitle("Đổi mật khẩu")
-                .setView(content)
-                .setPositiveButton("Đổi", (d, w) -> {
-                    String oldP = etOld.getText().toString();
-                    String newP = etNew.getText().toString();
-                    try (DatabaseHelper db = new DatabaseHelper(requireContext())) {
-                        // TODO: bạn cài đặt db.updatePassword(user.id, oldP, newP)
-                        // db.updatePassword(user.id, oldP, newP);
-                    }
-                    Snackbar.make(requireView(), "Đổi mật khẩu thành công", Snackbar.LENGTH_LONG).show();
+        new AlertDialog.Builder(requireContext())
+                .setTitle(R.string.action_change_password)
+                .setView(form)
+                .setPositiveButton(R.string.action_change, (d,w)->{
+                    String o = etOld.getText().toString();
+                    String n = etNew.getText().toString();
+                    String r = etRe.getText().toString();
+                    if (n.length() < 6) { toast("Mật khẩu mới phải ≥ 6 ký tự"); return; }
+                    if (!n.equals(r)) { toast("Nhập lại mật khẩu chưa khớp"); return; }
+
+                    ApiService.ChangePasswordRequest body = new ApiService.ChangePasswordRequest();
+                    body.oldPassword = o; body.newPassword = n;
+                    api.changePassword(userId, body).enqueue(new Callback<ApiService.BaseResponse>() {
+                        @Override public void onResponse(Call<ApiService.BaseResponse> call, Response<ApiService.BaseResponse> res) {
+                            if (res.isSuccessful() && res.body()!=null && res.body().success) toast("Đã đổi mật khẩu");
+                            else toast("Đổi mật khẩu thất bại");
+                        }
+                        @Override public void onFailure(Call<ApiService.BaseResponse> call, Throwable t) { toast("Lỗi mạng: " + t.getMessage()); }
+                    });
                 })
-                .setNegativeButton("Hủy", null)
+                .setNegativeButton(R.string.action_cancel, null)
                 .show();
     }
 
-    private void navigateTo(Fragment f){
-        requireActivity().getSupportFragmentManager()
-                .beginTransaction()
-                .replace(R.id.player_nav_host, f) // id container của PlayerActivity
-                .addToBackStack(null)
-                .commit();
+    private void doLogout() {
+        new AlertDialog.Builder(requireContext())
+                .setMessage(R.string.confirm_logout)
+                .setPositiveButton(R.string.action_logout, (d, w) -> {
+                    // 1. Xoá session
+                    requireContext()
+                            .getSharedPreferences("session", Context.MODE_PRIVATE)
+                            .edit().clear().apply();
+
+                    // 2. Thông báo
+                    Toast.makeText(requireContext(), "Đã đăng xuất", Toast.LENGTH_SHORT).show();
+
+                    // 3. Điều hướng về LoginActivity, xoá toàn bộ back stack
+                    Intent i = new Intent(requireContext(), LoginActivity.class);
+                    i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                    startActivity(i);
+
+                    // 4. Kết thúc Activity hiện tại
+                    requireActivity().finish();
+                })
+                .setNegativeButton(R.string.action_cancel, null)
+                .show();
     }
 
-    private static String safe(String s){ return s==null ? "" : s; }
+
+    private String n(String s){ return s==null? "" : s; }
+    private void toast(String m){ Toast.makeText(requireContext(), m, Toast.LENGTH_SHORT).show(); }
 }

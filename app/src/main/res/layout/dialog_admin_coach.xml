@@ -1,77 +1,50 @@
 <?xml version="1.0" encoding="utf-8"?>
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="match_parent"
-    android:layout_height="wrap_content">
+    android:layout_width="match_parent" android:layout_height="wrap_content">
 
     <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:padding="16dp">
+        android:padding="16dp"
+        android:layout_width="match_parent" android:layout_height="wrap_content">
 
-        <EditText
-            android:id="@+id/etName"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+        <EditText android:id="@+id/edName"
             android:hint="Tên HLV"
-            android:inputType="textPersonName" />
+            android:layout_width="match_parent" android:layout_height="wrap_content"/>
 
-        <EditText
-            android:id="@+id/etSport"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:hint="Môn (Tennis/Badminton/Football...)"
-            android:inputType="textCapWords" />
+        <EditText android:id="@+id/edSport"
+            android:hint="Bộ môn (Tennis/Badminton/Football...)"
+            android:layout_width="match_parent" android:layout_height="wrap_content"/>
 
-        <EditText
-            android:id="@+id/etLevel"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:hint="Cấp độ (Beginner/Intermediate/Pro)"
-            android:inputType="textCapWords" />
+        <EditText android:id="@+id/edLevel"
+            android:hint="Trình độ (Pro/Intermediate/...)"
+            android:layout_width="match_parent" android:layout_height="wrap_content"/>
 
-        <EditText
-            android:id="@+id/etRate"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+        <EditText android:id="@+id/edRate"
             android:hint="Giá/giờ (đ)"
-            android:inputType="numberDecimal" />
+            android:inputType="numberDecimal"
+            android:layout_width="match_parent" android:layout_height="wrap_content"/>
 
-        <EditText
-            android:id="@+id/etAvatar"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:hint="Ảnh (tên drawable hoặc URL)"
-            android:inputType="textUri" />
-
-        <EditText
-            android:id="@+id/etBio"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:minLines="2"
-            android:hint="Giới thiệu ngắn"
-            android:inputType="textMultiLine" />
-
-        <EditText
-            android:id="@+id/etPhone"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+        <EditText android:id="@+id/edPhone"
             android:hint="SĐT"
-            android:inputType="phone" />
+            android:inputType="phone"
+            android:layout_width="match_parent" android:layout_height="wrap_content"/>
 
-        <EditText
-            android:id="@+id/etEmail"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+        <EditText android:id="@+id/edEmail"
             android:hint="Email"
-            android:inputType="textEmailAddress" />
+            android:inputType="textEmailAddress"
+            android:layout_width="match_parent" android:layout_height="wrap_content"/>
 
-        <EditText
-            android:id="@+id/etZalo"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:hint="Zalo (ID/SĐT)"
-            android:inputType="text" />
+        <EditText android:id="@+id/edZalo"
+            android:hint="Zalo"
+            android:layout_width="match_parent" android:layout_height="wrap_content"/>
 
+        <EditText android:id="@+id/edAvatar"
+            android:hint="Ảnh (tên file trong /uploads, ví dụ: coach_tennis_1.jpg)"
+            android:layout_width="match_parent" android:layout_height="wrap_content"/>
+
+        <EditText android:id="@+id/edBio"
+            android:hint="Giới thiệu"
+            android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:minLines="3"/>
     </LinearLayout>
 </ScrollView>

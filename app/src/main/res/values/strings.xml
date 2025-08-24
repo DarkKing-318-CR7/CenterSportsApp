@@ -37,6 +37,21 @@
     <!-- res/values/strings.xml -->
     <string name="label_user_hash">User #%1$d</string>
     <string name="label_currency_suffix">%1$sđ</string>
+    <string name="action_hide_details">Ẩn thông tin</string>
+
+
+    <string name="action_change">Đổi</string>
+
+    <string name="confirm_logout">Đăng xuất tài khoản?</string>
+    <string name="coach_avatar">Ảnh HLV</string>
+    <string name="coach_name_placeholder">Tên HLV</string>
+    <string name="coach_sport_placeholder">Môn thể thao</string>
+    <string name="coach_level_placeholder">Trình độ</string>
+    <string name="coach_rate_placeholder">0đ/giờ</string>
+    <string name="coach_bio_placeholder">Mô tả…</string>
+    <string name="call">Gọi</string>
+    <string name="sms">Nhắn tin</string>
+    <string name="email">Email</string>
 
 
 

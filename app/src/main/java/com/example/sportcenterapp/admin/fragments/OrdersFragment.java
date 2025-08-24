@@ -52,7 +52,7 @@ public class OrdersFragment extends Fragment implements AdminOrdersAdapter.OnAct
         adapter = new AdminOrdersAdapter(this);
         rv.setAdapter(adapter);
 
-        api = ApiClient.get().create(ApiService.class);
+        api = ApiClient.build().create(ApiService.class);
 
         // filter with ChipGroup
         chipGroup.setOnCheckedStateChangeListener((group, checkedIds) -> {

@@ -1,10 +1,13 @@
-// player/fragments/OrdersFragment.java
 package com.example.sportcenterapp.player.fragments;
 
 import android.os.Bundle;
-import android.view.*;
-import android.widget.*;
-import androidx.annotation.*;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.TextView;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -15,56 +18,63 @@ import com.example.sportcenterapp.net.ApiClient;
 import com.example.sportcenterapp.net.ApiService;
 import com.example.sportcenterapp.utils.SessionManager;
 
-import java.util.*;
-import retrofit2.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 public class OrdersFragment extends Fragment {
 
-    private RecyclerView rv;
-    private TextView tvEmpty;
     private OrdersAdapter adapter;
-    private final List<ApiService.OrderDTO> data = new ArrayList<>();
-
     private ApiService api;
     private SessionManager session;
 
+    // Dùng DTO trực tiếp
+    private final List<ApiService.OrderDTO> data = new ArrayList<>();
+
     @Nullable
     @Override
-    public View onCreateView(@NonNull LayoutInflater inf, @Nullable ViewGroup c, @Nullable Bundle s) {
-        View v = inf.inflate(R.layout.fragment_orders, c, false);
-        rv = v.findViewById(R.id.rvOrders);
-        tvEmpty = v.findViewById(R.id.tvEmpty);
+    public View onCreateView(@NonNull LayoutInflater inf, @Nullable ViewGroup container, @Nullable Bundle s) {
+        View v = inf.inflate(R.layout.fragment_orders, container, false);
+
+        RecyclerView rv   = v.findViewById(R.id.rvOrders);
+        TextView tvEmpty  = v.findViewById(R.id.tvEmpty);
 
         rv.setLayoutManager(new LinearLayoutManager(getContext()));
-        adapter = new OrdersAdapter(data, order -> showDetail(order));
+
+        // !!! Quan trọng: callback gồm 2 tham số (o, position)
+        adapter = new OrdersAdapter(data, (o, position) -> showDetail(o));
         rv.setAdapter(adapter);
 
-        api = ApiClient.get().create(ApiService.class);
+        api = ApiClient.getInstance().create(ApiService.class);
         session = new SessionManager(requireContext());
 
-        loadOrders();
+        loadOrders(tvEmpty);
         return v;
     }
 
-    private void loadOrders() {
+    private void loadOrders(TextView tvEmpty) {
         int uid = session.getUserId();
         if (uid <= 0) {
             tvEmpty.setVisibility(View.VISIBLE);
+            adapter.submit(Collections.emptyList());
             return;
         }
 
         api.getOrdersByUser(uid).enqueue(new Callback<List<ApiService.OrderDTO>>() {
             @Override
-            public void onResponse(Call<List<ApiService.OrderDTO>> call, Response<List<ApiService.OrderDTO>> r) {
+            public void onResponse(Call<List<ApiService.OrderDTO>> call, Response<List<ApiService.OrderDTO>> res) {
                 if (!isAdded()) return;
-                if (r.isSuccessful() && r.body() != null) {
-                    data.clear();
-                    data.addAll(r.body());
-                    adapter.notifyDataSetChanged();
-                    tvEmpty.setVisibility(data.isEmpty() ? View.VISIBLE : View.GONE);
+                if (res.isSuccessful() && res.body() != null) {
+                    List<ApiService.OrderDTO> list = res.body();
+                    adapter.submit(list);
+                    tvEmpty.setVisibility(list.isEmpty() ? View.VISIBLE : View.GONE);
                 } else {
                     tvEmpty.setVisibility(View.VISIBLE);
-                    Toast.makeText(getContext(), "Không tải được đơn hàng", Toast.LENGTH_SHORT).show();
+                    adapter.submit(Collections.emptyList());
                 }
             }
 
@@ -72,7 +82,7 @@ public class OrdersFragment extends Fragment {
             public void onFailure(Call<List<ApiService.OrderDTO>> call, Throwable t) {
                 if (!isAdded()) return;
                 tvEmpty.setVisibility(View.VISIBLE);
-                Toast.makeText(getContext(), "Lỗi mạng: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+                adapter.submit(Collections.emptyList());
             }
         });
     }

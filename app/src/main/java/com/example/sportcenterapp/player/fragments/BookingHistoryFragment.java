@@ -31,7 +31,7 @@ public class BookingHistoryFragment extends Fragment {
         rv.setAdapter(adapter);
 
 
-        api = ApiClient.get().create(ApiService.class);
+        api = ApiClient.build().create(ApiService.class);
         session = new SessionManager(requireContext());
         loadHistory();
         return v;
@@ -40,7 +40,7 @@ public class BookingHistoryFragment extends Fragment {
         Integer uid = new SessionManager(requireContext()).getUserId();
         if (uid==null || uid<=0) { Toast.makeText(getContext(),"Vui lòng đăng nhập lại",Toast.LENGTH_SHORT).show(); return; }
         setLoading(true);
-        ApiService api = ApiClient.get().create(ApiService.class);
+        ApiService api = ApiClient.build().create(ApiService.class);
         api.cancelBookingByUser(new ApiService.CancelReq(uid, bookingId))
                 .enqueue(new retrofit2.Callback<ApiService.SimpleResp>() {
                     @Override public void onResponse(retrofit2.Call<ApiService.SimpleResp> c, retrofit2.Response<ApiService.SimpleResp> r) {

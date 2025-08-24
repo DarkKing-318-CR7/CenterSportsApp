@@ -1,13 +1,28 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:orientation="vertical" android:padding="16dp"
-    android:layout_width="match_parent" android:layout_height="match_parent">
+    android:orientation="vertical" android:layout_width="match_parent" android:layout_height="match_parent">
 
-    <TextView android:text="Thuê HLV - bước sau sẽ load danh sách HLV"
-        android:textStyle="bold" android:textSize="16sp"
-        android:layout_width="wrap_content" android:layout_height="wrap_content"/>
+    <SearchView
+        android:id="@+id/search"
+        android:queryHint="Tìm HLV..."
+        android:layout_width="match_parent" android:layout_height="wrap_content"/>
 
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/rvCoaches"
-        android:layout_width="match_parent" android:layout_height="match_parent"/>
+    <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
+        android:id="@+id/srl" android:layout_width="match_parent" android:layout_height="match_parent">
+
+        <FrameLayout
+            android:layout_width="match_parent" android:layout_height="match_parent">
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/rv"
+                android:layout_width="match_parent" android:layout_height="match_parent"
+                android:padding="4dp"/>
+
+            <TextView
+                android:id="@+id/empty"
+                android:layout_width="wrap_content" android:layout_height="wrap_content"
+                android:text="Chưa có HLV"
+                android:layout_gravity="center" android:visibility="gone"/>
+        </FrameLayout>
+    </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
 </LinearLayout>

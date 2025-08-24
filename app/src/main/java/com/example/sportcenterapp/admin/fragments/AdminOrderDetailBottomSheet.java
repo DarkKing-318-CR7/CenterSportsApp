@@ -56,7 +56,7 @@ public class AdminOrderDetailBottomSheet extends BottomSheetDialogFragment {
         rvOrderItems.setLayoutManager(new LinearLayoutManager(getContext()));
         rvOrderItems.setAdapter(itemsAdapter);
 
-        api = ApiClient.get().create(ApiService.class);
+        api = ApiClient.build().create(ApiService.class);
 
         int orderId = getArguments() != null ? getArguments().getInt(ARG_ORDER_ID, -1) : -1;
         if (orderId > 0) {

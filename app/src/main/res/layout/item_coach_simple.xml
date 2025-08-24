@@ -1,128 +1,110 @@
-<com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
+<?xml version="1.0" encoding="utf-8"?>
+<com.google.android.material.card.MaterialCardView
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_marginTop="8dp"
-    android:layout_marginBottom="8dp"
+    android:layout_margin="12dp"
     app:cardCornerRadius="16dp"
-    app:strokeWidth="1dp"
-    app:strokeColor="?attr/colorOutline"
-    app:cardUseCompatPadding="true"
-    app:cardPreventCornerOverlap="true"
-    app:contentPaddingLeft="12dp"
-    app:contentPaddingRight="16dp"
-    app:contentPaddingTop="12dp"
-    app:contentPaddingBottom="12dp">
+    app:cardUseCompatPadding="true">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        android:gravity="center_vertical">
+        android:minHeight="125dp"
+        android:padding="12dp">
 
-        <!-- Avatar tròn -->
-        <com.google.android.material.imageview.ShapeableImageView
+        <!-- Avatar -->
+        <ImageView
             android:id="@+id/ivAvatar"
-            android:layout_width="56dp"
-            android:layout_height="56dp"
-            android:src="@drawable/ic_person"
+            android:layout_width="72dp"
+            android:layout_height="72dp"
+            android:layout_marginEnd="12dp"
             android:scaleType="centerCrop"
-            app:cornerFamily="rounded"
-            app:cornerSize="50%"
-            app:strokeColor="?attr/colorOutline"
-            app:strokeWidth="1dp" />
+            android:src="@drawable/ic_person"
+            android:contentDescription="@string/coach_avatar"/>
 
-        <!-- Info -->
+        <!-- Thông tin -->
         <LinearLayout
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:orientation="vertical"
-            android:paddingStart="12dp"
-            android:paddingEnd="12dp">
+            android:orientation="vertical">
 
             <TextView
                 android:id="@+id/tvName"
-                android:layout_width="wrap_content"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:textStyle="bold"
-                android:textSize="16sp" />
+                android:textSize="16sp"
+                android:textColor="?android:attr/textColorPrimary"
+                android:text="@string/coach_name_placeholder"/>
 
             <TextView
                 android:id="@+id/tvSport"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content" />
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/coach_sport_placeholder"
+                android:textColor="?android:attr/textColorSecondary"/>
 
             <TextView
                 android:id="@+id/tvLevel"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content" />
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/coach_level_placeholder"
+                android:textColor="?android:attr/textColorSecondary"/>
 
             <TextView
                 android:id="@+id/tvRate"
-                android:layout_width="wrap_content"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:textStyle="bold"
-                android:paddingTop="2dp" />
+                android:text="@string/coach_rate_placeholder"/>
 
             <TextView
                 android:id="@+id/tvBio"
-                android:layout_width="wrap_content"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:maxLines="2"
                 android:ellipsize="end"
-                android:paddingTop="2dp" />
+                android:text="@string/coach_bio_placeholder"/>
         </LinearLayout>
 
-        <!-- Actions (không Zalo) -->
+        <!-- Cột 3 nút liên lạc (tăng kích thước để không bị che) -->
         <LinearLayout
-            android:layout_width="60dp"
+            android:layout_width="wrap_content"
             android:layout_height="match_parent"
             android:orientation="vertical"
-            android:gravity="center"
-            android:paddingEnd="8dp"
-            android:paddingStart="4dp">
+            android:gravity="center">
 
-            <!-- Call -->
             <ImageButton
                 android:id="@+id/btnCall"
-                android:layout_width="36dp"
-                android:layout_height="36dp"
-                android:minWidth="0dp"
-                android:minHeight="0dp"
-                android:contentDescription="@string/desc_call"
-                android:background="?attr/selectableItemBackgroundBorderless"
-                android:scaleType="centerInside"
-                app:tint="?attr/colorOnSurfaceVariant"
-                android:src="@drawable/ic_call" />
+                style="?attr/borderlessButtonStyle"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:padding="6dp"
+                app:srcCompat="@drawable/ic_call"
+                android:contentDescription="@string/call"/>
 
-            <!-- SMS -->
             <ImageButton
                 android:id="@+id/btnSms"
-                android:layout_width="36dp"
-                android:layout_height="36dp"
-                android:minWidth="0dp"
-                android:minHeight="0dp"
-                android:layout_marginTop="4dp"
-                android:contentDescription="@string/desc_sms"
-                android:background="?attr/selectableItemBackgroundBorderless"
-                android:scaleType="centerInside"
-                app:tint="?attr/colorOnSurfaceVariant"
-                android:src="@drawable/ic_sms" />
+                style="?attr/borderlessButtonStyle"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:padding="6dp"
+                android:src="@drawable/ic_sms"
+                android:contentDescription="@string/sms"/>
 
-            <!-- Email -->
             <ImageButton
                 android:id="@+id/btnEmail"
-                android:layout_width="36dp"
-                android:layout_height="36dp"
-                android:minWidth="0dp"
-                android:minHeight="0dp"
-                android:layout_marginTop="4dp"
-                android:contentDescription="@string/desc_email"
-                android:background="?attr/selectableItemBackgroundBorderless"
-                android:scaleType="centerInside"
-                app:tint="?attr/colorOnSurfaceVariant"
-                android:src="@drawable/ic_email" />
+                style="?attr/borderlessButtonStyle"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:padding="6dp"
+                android:src="@drawable/ic_email"
+                android:contentDescription="@string/email"/>
         </LinearLayout>
+
     </LinearLayout>
 </com.google.android.material.card.MaterialCardView>

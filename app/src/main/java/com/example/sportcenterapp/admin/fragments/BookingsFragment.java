@@ -53,7 +53,7 @@ public class BookingsFragment extends Fragment {
         adapter = new AdminAdapter(data, this::updateStatus);
         rv.setAdapter(adapter);
 
-        api = ApiClient.get().create(ApiService.class);
+        api = ApiClient.build().create(ApiService.class);
 
         // Nếu chip XML chưa set tag, set tạm theo text hiển thị
         initChipTagsIfMissing();

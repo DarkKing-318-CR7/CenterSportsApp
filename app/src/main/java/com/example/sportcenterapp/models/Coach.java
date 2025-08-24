@@ -1,12 +1,18 @@
 package com.example.sportcenterapp.models;
 
+import com.google.gson.annotations.SerializedName;
+
 public class Coach {
     private int id;
     private String name;
     private String sport;
     private String level;
+
+    // MySQL column: rate_per_hour  -> map sang field camelCase
+    @SerializedName("rate_per_hour")
     private double ratePerHour;
-    private String avatar;   // tên drawable hoặc URL
+
+    private String avatar;   // tên drawable hoặc tên file/URL
     private String bio;
     private String phone;
     private String email;
@@ -24,7 +30,7 @@ public class Coach {
     public String getEmail() { return email; }
     public String getZalo() { return zalo; }
 
-    // --- setters (khớp với DatabaseHelper.getAllCoaches) ---
+    // --- setters (nếu cần dùng chỗ khác) ---
     public void setId(int id) { this.id = id; }
     public void setName(String name) { this.name = name; }
     public void setSport(String sport) { this.sport = sport; }

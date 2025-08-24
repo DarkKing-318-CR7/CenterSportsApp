@@ -1,8 +1,10 @@
 package com.example.sportcenterapp.net;
 
 import com.example.sportcenterapp.models.Booking;
+import com.example.sportcenterapp.models.Coach;
 import com.example.sportcenterapp.models.OrderItem;
 import com.example.sportcenterapp.models.Product;
+import com.example.sportcenterapp.models.User;
 import com.google.gson.annotations.SerializedName;
 import com.example.sportcenterapp.models.Court;
 import java.util.List;
@@ -11,6 +13,7 @@ import okhttp3.MultipartBody;
 import okhttp3.RequestBody;
 import retrofit2.Call;
 import retrofit2.http.*;
+import okhttp3.MultipartBody;
 
 // Bạn đã có models.User/Court; nếu field không trùng tên JSON, dùng lớp “DTO” nhỏ map sẵn như dưới.
 public interface ApiService {
@@ -154,7 +157,8 @@ public interface ApiService {
         public Integer id;
         public String name, category, description;
         public double price;
-        public int stock, active;
+        public int stock;
+        public String status;// 1=ACTIVE, 0=HIDDEN
     }
 
     // === SHOP / CART / ORDERS ===
@@ -205,12 +209,15 @@ public interface ApiService {
         public String status, created_at;
         public List<OrderItem> items;
     }
-    class OrderDTO {
-        public int id;
+    public static class OrderDTO {
+        public Integer id;
         public String status;
-        public double total;   // phải khớp alias trong SQL
         public String created_at;
+
+        @com.google.gson.annotations.SerializedName("total_price")
+        public Double totalPrice;   // Gson sẽ tự map "total_price" -> totalPrice
     }
+
 
     public static class OrderAdminDTO {
         @SerializedName("id") public int id;
@@ -239,5 +246,99 @@ public interface ApiService {
         public String image;    // (optional) đường dẫn ảnh, nếu server trả
     }
 
+    @GET("products_list_admin.php")
+    Call<ProductListResponse> adminProducts(
+            @Query("q") String q,
+            @Query("category") String category,
+            @Query("status") String status,
+            @Query("page") Integer page,
+            @Query("limit") Integer limit,
+            @Query("sort") String sort,
+            @Query("order") String order
+    );
+
+    // CREATE
+    @POST("product_create.php")
+    Call<BaseResponse> createProduct(@Body ProductCreateRequest body);
+
+    // UPDATE
+    @POST("product_update.php")
+    Call<BaseResponse> updateProduct(@Query("id") int id, @Body ProductUpdateRequest body);
+
+    // DELETE
+    @POST("product_delete.php")
+    Call<BaseResponse> deleteProduct(@Query("id") int id);
+
+    // UPLOAD (nếu dùng)
+    @Multipart
+    @POST("product_upload_image.php")
+    Call<ImageUploadResponse> uploadProductImage(@Part MultipartBody.Part file);
+
+    public class ProductListResponse { public int page, limit, total; public List<Product> items; }
+    public class BaseResponse { public boolean success; public String error; public Integer id; }
+    public class ProductCreateRequest {
+        public String name, description, category, image_url, status; public double price; public int stock;
+    }
+    public class ProductUpdateRequest {
+        public String name, description, category, image_url, status; public Double price; public Integer stock;
+    }
+    public class ImageUploadResponse {
+        public boolean success;
+        public String url;     // PHP trả về đường dẫn ảnh, ví dụ "/images/products/xxx.png"
+        public String error;   // nếu có lỗi
+    }
+
+    // ===== Player Account =====
+    @GET("user_profile.php")
+    Call<UserResponse> getUserProfile(@Query("id") int userId);
+
+    @POST("user_update.php")
+    Call<BaseResponse> updateUser(@Query("id") int userId, @Body UserUpdateRequest body);
+
+    @POST("user_change_password.php")
+    Call<BaseResponse> changePassword(@Query("id") int userId, @Body ChangePasswordRequest body);
+
+    public class UserResponse { public boolean success; public User user; }
+    public class UserUpdateRequest {
+        @SerializedName("full_name")  public String fullName;
+        @SerializedName("phone")      public String phone;
+        @SerializedName("address")    public String address;
+        @SerializedName("avatar_url") public String avatar;
+    }
+
+    public class ChangePasswordRequest {
+        @SerializedName("old_password") public String oldPassword;
+        @SerializedName("new_password") public String newPassword;
+    }
+
+    @GET("products_list_public.php")
+    Call<List<Product>> productsPublic(@Query("q") String q,
+                                       @Query("page") Integer page,
+                                       @Query("limit") Integer limit);
+
+    @GET("coaches_list.php")
+    Call<List<Coach>> getCoaches(@Query("sport") String sport);
+
+    @GET("coaches_sports.php")
+    Call<List<String>> getCoachSports();
+
+    class CoachSaveReq {
+        public Integer id;  // null => create
+        public String name, sport, level, avatar, bio, phone, email, zalo;
+        @SerializedName("rate_per_hour") public double ratePerHour; // map để PHP nhận field snake_case
+    }
+
+    @POST("coach_save.php")
+    Call<SimpleRespId> saveCoach(@Body CoachSaveReq req);
+
+    @POST("coach_delete.php")
+    Call<SimpleResp> deleteCoach(@Body IdReq req);
+
+    @Multipart
+    @POST("coach_upload_avatar.php")
+    Call<UploadImageResp> uploadCoachAvatar(
+            @Part("coach_id") RequestBody coachId,
+            @Part MultipartBody.Part image
+    );
 
 }

@@ -1,4 +1,3 @@
-// com.example.sportcenterapp.adapters.CoachSimpleAdapter
 package com.example.sportcenterapp.adapters;
 
 import android.content.Context;
@@ -12,8 +11,12 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.recyclerview.widget.RecyclerView;
+
+import com.bumptech.glide.Glide;
 import com.example.sportcenterapp.R;
 import com.example.sportcenterapp.models.Coach;
+import com.example.sportcenterapp.net.ApiClient;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
@@ -23,16 +26,30 @@ public class CoachSimpleAdapter extends RecyclerView.Adapter<CoachSimpleAdapter.
     @FunctionalInterface
     public interface OnItemClick { void onClick(Coach coach); }
 
+    @FunctionalInterface
+    public interface OnItemLongClick { void onLongClick(View anchor, Coach coach); }
+
     private final List<Coach> data = new ArrayList<>();
     @Nullable private final OnItemClick onItemClick;
+    @Nullable private final OnItemLongClick onItemLongClick;
 
-    // Admin: truyền callback để sửa; Player: có thể truyền null
-    public CoachSimpleAdapter(@Nullable List<Coach> init, @Nullable OnItemClick onItemClick) {
+    public CoachSimpleAdapter(@Nullable List<Coach> init,
+                              @Nullable OnItemClick onItemClick,
+                              @Nullable OnItemLongClick onItemLongClick) {
         if (init != null) data.addAll(init);
         this.onItemClick = onItemClick;
+        this.onItemLongClick = onItemLongClick;
     }
-    // Player (không callback)
-    public CoachSimpleAdapter(@Nullable List<Coach> init) { this(init, null); }
+
+    // Player (không cần long click)
+    public CoachSimpleAdapter(@Nullable List<Coach> init, @Nullable OnItemClick onItemClick) {
+        this(init, onItemClick, null);
+    }
+
+    // Player cực đơn giản
+    public CoachSimpleAdapter(@Nullable List<Coach> init) {
+        this(init, null, null);
+    }
 
     public void submit(@Nullable List<Coach> d) {
         data.clear();
@@ -77,15 +94,33 @@ public class CoachSimpleAdapter extends RecyclerView.Adapter<CoachSimpleAdapter.
         } else h.tvRate.setVisibility(View.GONE);
         h.tvBio.setText(n(c.getBio()));
 
-        int resId = 0;
+        // Ảnh: drawable -> nếu không có thì load từ API/uploads
+        boolean loaded = false;
         String avatar = c.getAvatar();
         if (avatar != null && !avatar.isEmpty()) {
-            resId = ctx.getResources().getIdentifier(avatar, "drawable", ctx.getPackageName());
+            int resId = ctx.getResources().getIdentifier(avatar, "drawable", ctx.getPackageName());
+            if (resId != 0) {
+                h.iv.setImageResource(resId);
+                loaded = true;
+            } else {
+                String url = ApiClient.BASE_URL + "uploads/" + avatar;
+                Glide.with(ctx).load(url)
+                        .placeholder(R.drawable.ic_person)
+                        .error(R.drawable.ic_person)
+                        .into(h.iv);
+                loaded = true;
+            }
         }
-        h.iv.setImageResource(resId != 0 ? resId : R.drawable.ic_person);
+        if (!loaded) h.iv.setImageResource(R.drawable.ic_person);
 
+        // click / long click
         h.itemView.setOnClickListener(v -> { if (onItemClick != null) onItemClick.onClick(c); });
+        h.itemView.setOnLongClickListener(v -> {
+            if (onItemLongClick != null) onItemLongClick.onLongClick(v, c);
+            return onItemLongClick != null;
+        });
 
+        // Hành động gọi / sms / email (cho player)
         h.btnCall.setOnClickListener(v -> {
             String phone = c.getPhone();
             if (phone != null && !phone.isEmpty()) {

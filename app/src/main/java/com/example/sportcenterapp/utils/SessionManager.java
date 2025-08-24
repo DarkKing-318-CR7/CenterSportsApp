@@ -16,6 +16,7 @@ public class SessionManager {
 
     private final SharedPreferences prefs;
     private final SharedPreferences.Editor editor;
+    private static SessionManager I;
 
     public SessionManager(Context ctx) {
         prefs  = ctx.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE);
@@ -36,6 +37,7 @@ public class SessionManager {
     public void setUsername(String username) { editor.putString(KEY_USERNAME, username).apply(); }
     public void setRole(String role)         { editor.putString(KEY_ROLE, role).apply(); }
     public void setVip(boolean vip)          { editor.putBoolean(KEY_VIP, vip).apply(); }
+    public static SessionManager get(Context c) { if (I==null) I = new SessionManager(c); return I; }
 
     // Getters
     public Integer getUserId() {

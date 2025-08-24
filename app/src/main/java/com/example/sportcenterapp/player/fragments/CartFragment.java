@@ -80,7 +80,7 @@ public class CartFragment extends Fragment {
         });
         rv.setAdapter(adapter);
 
-        api = ApiClient.get().create(ApiService.class);
+        api = ApiClient.build().create(ApiService.class);
         session = new SessionManager(requireContext());
 
         // nạp dữ liệu từ store

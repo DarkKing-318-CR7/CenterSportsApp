@@ -45,7 +45,7 @@ public class LoginActivity extends AppCompatActivity {
         tvDemoPlayer = findViewById(R.id.tvHint2);
 
         session = new SessionManager(this);
-        api = ApiClient.get().create(ApiService.class);
+        api = ApiClient.build().create(ApiService.class);
 
         // Auto-fill demo (khớp dữ liệu seed trong sportcenter_seed.sql: admin/123, player/123)
         tvDemoAdmin.setOnClickListener(v -> {

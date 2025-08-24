@@ -82,7 +82,7 @@ public class BookingFragment extends Fragment {
         btnBook      = v.findViewById(R.id.btnBook);
 
         session = new SessionManager(requireContext());
-        api = ApiClient.get().create(ApiService.class);
+        api = ApiClient.build().create(ApiService.class);
 
         // Ngày mặc định = hôm nay
         Calendar now = Calendar.getInstance();

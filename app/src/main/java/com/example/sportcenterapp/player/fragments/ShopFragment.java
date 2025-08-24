@@ -36,7 +36,7 @@ public class ShopFragment extends Fragment implements ProductAdapter.OnAction {
         adapter = new ProductAdapter(data, this);
         rv.setAdapter(adapter);
 
-        api = ApiClient.get().create(ApiService.class);
+        api = ApiClient.build().create(ApiService.class);
         loadProducts();
         return v;
     }

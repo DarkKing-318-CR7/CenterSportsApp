@@ -83,7 +83,7 @@ public class CourtsFragment extends Fragment implements CourtAdapter.Actions {
         // Vuốt trái/phải để xoá
         attachSwipeToDelete();
 
-        api = ApiClient.get().create(ApiService.class);
+        api = ApiClient.build().create(ApiService.class);
         if (swipe != null) swipe.setOnRefreshListener(this::loadCourts);
         loadCourts();
         return v;
