@@ -379,27 +379,6 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
 
     // ===== Courts API =====
-    public List<Court> getCourts() {
-        List<Court> list = new ArrayList<>();
-        try (SQLiteDatabase db = getReadableDatabase();
-             Cursor c = db.rawQuery(
-                     "SELECT id,name,sport,surface,indoor,price,rating,image " +
-                             "FROM Courts ORDER BY name", null)) {
-            while (c.moveToNext()) {
-                list.add(new Court(
-                        c.getInt(0),
-                        c.getString(1),
-                        c.getString(2),
-                        c.getString(3),
-                        c.getInt(4),
-                        c.getDouble(5),
-                        c.getDouble(6),
-                        c.getString(7)
-                ));
-            }
-        }
-        return list;
-    }
 
     // ===== Booking API =====
     public boolean hasConflict(int courtId, String date, String start, String end) {

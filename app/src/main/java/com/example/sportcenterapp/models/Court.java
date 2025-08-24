@@ -1,15 +1,28 @@
 package com.example.sportcenterapp.models;
 
+import com.google.gson.annotations.SerializedName;
+
 public class Court {
     public int id;
     public String name, sport, surface, image;
     public int indoor;
     public double price, rating;
+    @SerializedName("description") public String description;
 
+    public Court() {}
+
+    // Có thể thêm constructor đầy đủ nếu muốn
     public Court(int id, String name, String sport, String surface, int indoor,
-                 double price, double rating, String image) {
-        this.id = id; this.name = name; this.sport = sport; this.surface = surface;
-        this.indoor = indoor; this.price = price; this.rating = rating; this.image = image;
+                 double price, String image, String description, double rating) {
+        this.id = id;
+        this.name = name;
+        this.sport = sport;
+        this.surface = surface;
+        this.indoor = indoor;
+        this.price = price;
+        this.image = image;
+        this.description = description;
+        this.rating = rating;
     }
 
     public Court(String name, double price, String image) {

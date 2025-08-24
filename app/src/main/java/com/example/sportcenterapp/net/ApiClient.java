@@ -7,6 +7,7 @@ import retrofit2.converter.gson.GsonConverterFactory;
 
 public class ApiClient {
     private static Retrofit retrofit;
+    public static final String BASE_URL = "http://10.0.2.2/sportcenter_api/";
 
     public static Retrofit get() {
         if (retrofit == null) {

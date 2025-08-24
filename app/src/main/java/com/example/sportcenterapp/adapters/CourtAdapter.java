@@ -10,10 +10,14 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.bumptech.glide.Glide;
 import com.example.sportcenterapp.R;
 import com.example.sportcenterapp.models.Court;
+import com.example.sportcenterapp.net.ApiClient;
 
+import java.text.NumberFormat;
 import java.util.List;
+import java.util.Locale;
 
 /**
  * Dùng chung: Player & Admin
@@ -24,123 +28,80 @@ import java.util.List;
  *  - item_court.xml (Player): imgCourt, tvCourtName, tvCourtPrice
  *  - item_admin_court.xml (Admin): tvName, tvMeta, tvPrice (card clickable/focusable)  // :contentReference[oaicite:1]{index=1}
  */
+// imports giữ nguyên, nhớ đã import Glide
+
 public class CourtAdapter extends RecyclerView.Adapter<CourtAdapter.VH> {
 
-    public interface OnCourtAction {
-        default void onClick(Court c) {}
-        default void onEdit(Court c) {}
-        default void onDelete(Court c) {}
+    public interface Actions { void onEdit(Court c); void onDelete(Court c); }
+
+    private final List<Court> ds;
+    private final Actions actions;
+
+    public CourtAdapter(List<Court> ds, Actions actions) {
+        this.ds = ds;
+        this.actions = actions;
     }
 
-    private final List<Court> courts;
-    private final OnCourtAction listener; // có thể null (Player đơn thuần)
-    private final boolean isAdmin;
-
-    // Player giữ nguyên cách dùng cũ
-    public CourtAdapter(List<Court> courts) {
-        this(courts, null, false);
-    }
-
-    // Dùng cho Player muốn bắt click, hoặc Admin (isAdmin=true)
-    public CourtAdapter(List<Court> courts, OnCourtAction listener, boolean isAdmin) {
-        this.courts = courts;
-        this.listener = listener;
-        this.isAdmin = isAdmin;
-    }
-
-    @NonNull @Override
-    public VH onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        int layout = isAdmin ? R.layout.item_admin_court : R.layout.item_court;
-        View v = LayoutInflater.from(parent.getContext()).inflate(layout, parent, false);
-        return new VH(v, isAdmin, listener);
-    }
-
-    @Override
-    public void onBindViewHolder(@NonNull VH h, int position) {
-        Court c = courts.get(position);
-
-        // ---- Bind tên ----
-        if (h.tvName != null) h.tvName.setText(c.getName());         // admin
-        if (h.tvCourtName != null) h.tvCourtName.setText(c.getName()); // player
-
-        // ---- Bind giá ----
-        String priceText = ((int) c.getPrice()) + " đ/giờ";
-        if (h.tvPrice != null) h.tvPrice.setText(priceText);            // admin
-        if (h.tvCourtPrice != null) h.tvCourtPrice.setText(priceText);  // player
-
-        // ---- Meta (admin) ----
-        if (h.tvMeta != null) {
-            String meta = c.getSport() + " • " + (c.Indoor() == 1 ? "indoor" : "outdoor") + " • " + c.getSurface();
-            h.tvMeta.setText(meta);
-        }
-
-        // ---- Ảnh (nếu layout player có ImageView) ----
-        int resId = 0;
-        String img = c.getImage();
-        if (img != null && !img.trim().isEmpty()) {
-            resId = h.itemView.getContext().getResources()
-                    .getIdentifier(img.trim(), "drawable",
-                            h.itemView.getContext().getPackageName());
-        }
-        if (resId == 0) resId = R.drawable.placeholder_court;
-
-        if (h.ivImage != null) h.ivImage.setImageResource(resId);
-
-
-        // ---- Click: Admin = Edit ; Player = Click ----
-        if (h.clickTarget != null) {
-            if (h.isAdmin) {
-                h.clickTarget.setOnClickListener(v -> { if (h.listener != null) h.listener.onEdit(c); });
-                h.clickTarget.setOnLongClickListener(v -> { if (h.listener != null) h.listener.onEdit(c); return true; });
-            } else {
-                h.clickTarget.setOnClickListener(v -> { if (h.listener != null) h.listener.onClick(c); });
-            }
-        } else {
-            // fallback
-            if (h.isAdmin) {
-                h.itemView.setOnClickListener(v -> { if (h.listener != null) h.listener.onEdit(c); });
-                h.itemView.setOnLongClickListener(v -> { if (h.listener != null) h.listener.onEdit(c); return true; });
-            } else {
-                h.itemView.setOnClickListener(v -> { if (h.listener != null) h.listener.onClick(c); });
-            }
-        }
-    }
-
-    @Override public int getItemCount() { return courts.size(); }
-
-    /* ---------- ViewHolder hỗ trợ 2 layout ---------- */
     static class VH extends RecyclerView.ViewHolder {
-        // Player
-        View  clickTarget;           // card root nếu tìm được
-        ImageView ivImage;
-        TextView tvCourtName, tvCourtPrice;
-
-        // Admin
+        View item;
+        ImageView iv;
         TextView tvName, tvMeta, tvPrice;
-
-        final boolean isAdmin;
-        final OnCourtAction listener;
-
-        VH(@NonNull View v, boolean isAdmin, OnCourtAction listener) {
+        VH(View v) {
             super(v);
-            this.isAdmin = isAdmin;
-            this.listener = listener;
-
-            // Player ids (item_court.xml)
-            ivImage     = v.findViewById(R.id.ivImage);
-            tvCourtName  = v.findViewById(R.id.tvCourtName);
-            tvCourtPrice = v.findViewById(R.id.tvCourtPrice);
-
-            // Admin ids (item_admin_court.xml)
+            item    = v;
+            iv      = v.findViewById(R.id.ivImage);
             tvName  = v.findViewById(R.id.tvName);
             tvMeta  = v.findViewById(R.id.tvMeta);
             tvPrice = v.findViewById(R.id.tvPrice);
-
-            // Click target: nếu layout có card root riêng, có thể findViewById nó ở đây;
-            // với file bạn gửi, chính MaterialCardView là root -> dùng itemView luôn
-            clickTarget = itemView;
-            clickTarget.setClickable(true);
-            clickTarget.setFocusable(true);
         }
     }
+
+    @NonNull @Override public VH onCreateViewHolder(@NonNull ViewGroup p, int vt) {
+        View v = LayoutInflater.from(p.getContext())
+                .inflate(R.layout.item_admin_court, p, false);
+        return new VH(v);
+    }
+
+    @Override public void onBindViewHolder(@NonNull VH h, int pos) {
+        Court c = ds.get(pos);
+
+        // Tên
+        h.tvName.setText(c.name != null ? c.name : "—");
+
+        // Meta: sport • surface • indoor/outdoor
+        StringBuilder meta = new StringBuilder();
+        if (c.sport != null && !c.sport.isEmpty()) meta.append(c.sport);
+        if (c.surface != null && !c.surface.isEmpty())
+            meta.append(meta.length() > 0 ? " • " : "").append(c.surface);
+        meta.append(meta.length() > 0 ? " • " : "")
+                .append(c.indoor == 1 ? "indoor" : "outdoor");
+        h.tvMeta.setText(meta.toString());
+
+        // Giá
+        double price = c.price != 0 ? c.price : c.price; // tuỳ model
+        NumberFormat nf = NumberFormat.getInstance(new Locale("vi","VN"));
+        h.tvPrice.setText(nf.format(price) + "đ/giờ");
+
+        // Ảnh
+        String img = c.image;
+        if (img != null && !img.isEmpty()) {
+            if (!img.startsWith("http")) {
+                // Ghép BASE_URL nếu server trả đường dẫn tương đối: uploads/xxx.jpg
+                img = ApiClient.BASE_URL + (img.startsWith("/") ? img.substring(1) : img);
+            }
+            Glide.with(h.iv.getContext())
+                    .load(img)
+                    .placeholder(R.drawable.placeholder_court)
+                    .error(R.drawable.placeholder_court)
+                    .into(h.iv);
+        } else {
+            h.iv.setImageResource(R.drawable.placeholder_court);
+        }
+
+        // Click -> edit
+        h.item.setOnClickListener(v -> { if (actions != null) actions.onEdit(c); });
+        // (Nếu cần xoá bằng nút trong item thì thêm ở đây và gọi actions.onDelete(c))
+    }
+
+    @Override public int getItemCount() { return ds != null ? ds.size() : 0; }
 }

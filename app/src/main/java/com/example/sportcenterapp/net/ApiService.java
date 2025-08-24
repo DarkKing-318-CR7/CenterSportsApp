@@ -1,9 +1,13 @@
 package com.example.sportcenterapp.net;
 
 import com.example.sportcenterapp.models.Booking;
+import com.example.sportcenterapp.models.Product;
 import com.google.gson.annotations.SerializedName;
 import com.example.sportcenterapp.models.Court;
 import java.util.List;
+
+import okhttp3.MultipartBody;
+import okhttp3.RequestBody;
 import retrofit2.Call;
 import retrofit2.http.*;
 
@@ -58,6 +62,19 @@ public interface ApiService {
             @Query("date") String date // yyyy-MM-dd
     );
 
+    @POST("courts_save.php")
+    Call<ApiService.SimpleRespId> saveCourt(@Body ApiService.CourtSaveReq req);
+
+    @POST("courts_delete.php")
+    Call<ApiService.SimpleResp> deleteCourt(@Body ApiService.IdReq req);
+
+    @Multipart
+    @POST("courts_upload_image.php")
+    Call<ApiService.UploadImageResp> uploadCourtImage(
+            @Part("court_id") okhttp3.RequestBody courtId,
+            @Part okhttp3.MultipartBody.Part image
+    );
+
     // DTO tối thiểu (nếu chưa có trong models):
     class BookingCreateReq {
         public int user_id, court_id;
@@ -99,5 +116,43 @@ public interface ApiService {
     class CancelReq { public int user_id, booking_id;
         public CancelReq(int u, int b){ user_id=u; booking_id=b; }
     }
+    class CourtSaveReq {
+        // id = null => create; có id => update
+        public Integer id;
+        public String name;
+        public String sport;
+        public String surface;
+        public int indoor;         // 0/1
+        public double price;       // KHỚP Court.java của bạn
+        public String description; // KHỚP Court.java của bạn
+        public double rating;
+    }
+    class IdReq { public int id; public IdReq(int id){ this.id=id; } }
+    class SimpleRespId { public boolean ok; public String error; public int id; }
+    class UploadImageResp { public boolean ok; public String error; public String image; }
 
+
+    @GET("products_list.php")
+    Call<List<Product>> getProducts(@Query("q") String q);
+
+    @POST("products_save.php")
+    Call<SimpleRespId> saveProduct(@Body ProductSaveReq req);
+
+    @Multipart
+    @POST("products_upload_image.php")
+    Call<UploadImageResp> uploadProductImage(
+            @Part("id") RequestBody id,
+            @Part MultipartBody.Part image
+    );
+
+    @POST("products_delete.php")
+    Call<SimpleResp> deleteProduct(@Body IdReq req);
+
+    // DTO
+    class ProductSaveReq {
+        public Integer id;
+        public String name, category, description;
+        public double price;
+        public int stock, active;
+    }
 }

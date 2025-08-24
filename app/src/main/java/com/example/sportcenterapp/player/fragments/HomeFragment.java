@@ -71,11 +71,37 @@ public class HomeFragment extends Fragment {
 
     private void setupFeaturedCourts() {
         List<Court> courts = new ArrayList<>();
-        courts.add(new Court("Sân 7 người", 250000, "court_soccer"));
-        courts.add(new Court("Sân BC 01",   150000, "court_volleyball"));
-        courts.add(new Court("Cầu lông 01", 120000, "court_badminton"));
 
-        rvFeaturedCourts.setLayoutManager(new LinearLayoutManager(getContext(), LinearLayoutManager.HORIZONTAL, false));
-        rvFeaturedCourts.setAdapter(new CourtAdapter(courts));
+        Court c1 = new Court();
+        c1.name  = "Sân 7 người";
+        c1.price = 250000;
+        c1.sport = "Bóng đá";
+        c1.image = ""; // để trống -> adapter sẽ dùng placeholder
+        courts.add(c1);
+
+        Court c2 = new Court();
+        c2.name  = "Sân BC 01";
+        c2.price = 150000;
+        c2.sport = "Bóng chuyền";
+        c2.image = "";
+        courts.add(c2);
+
+        Court c3 = new Court();
+        c3.name  = "Cầu lông 01";
+        c3.price = 120000;
+        c3.sport = "Cầu lông";
+        c3.image = "";
+        courts.add(c3);
+
+        rvFeaturedCourts.setLayoutManager(
+                new LinearLayoutManager(getContext(), LinearLayoutManager.HORIZONTAL, false)
+        );
+
+        // CourtAdapter cần 2 đối số: data + Actions
+        rvFeaturedCourts.setAdapter(new CourtAdapter(courts, new CourtAdapter.Actions() {
+            @Override public void onEdit(Court c) { /* Home chỉ hiển thị -> bỏ trống */ }
+            @Override public void onDelete(Court c) { /* Home chỉ hiển thị -> bỏ trống */ }
+        }));
     }
+
 }

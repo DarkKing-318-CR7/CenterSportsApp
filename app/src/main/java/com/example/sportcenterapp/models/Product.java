@@ -2,10 +2,11 @@ package com.example.sportcenterapp.models;
 
 public class Product {
     public int id;
-    public String name;
+    public String name, category, image, description;
     public double price;
-    public String image; // tên file ảnh trong drawable
     public int stock;
+    public int active; // 1/0
+
     public Product(int id, String name, double price, String image,int stock) {
         this.id = id;
         this.name = name;
